@@ -178,7 +178,7 @@ function verifySession(request){
     const match =
         cookie.match(
             new RegExp(
-                `${COOKIE_NAME}=([^;]+)`
+               `${COOKIE_NAME}=([^;]+)`
             )
         );
 
