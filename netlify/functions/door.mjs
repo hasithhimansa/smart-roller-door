@@ -82,7 +82,10 @@ function safeEqual(a, b) {
         return false;
     }
 
-    return crypto.timingSafeEqual(aBuf, bBuf);
+    return crypto.timingSafeEqual(
+        aBuf,
+        bBuf
+    );
 }
 
 /* =========================================================
@@ -116,13 +119,6 @@ function verifySession(request) {
     const cookie =
         request.headers.get("cookie") || "";
 
-    /*
-       IMPORTANT:
-       No template literal here.
-       This avoids the previous Netlify
-       build error.
-    */
-
     const match = cookie.match(
         new RegExp(
             COOKIE_NAME + "=([^;]+)"
@@ -133,9 +129,11 @@ function verifySession(request) {
         return false;
     }
 
-    const token = match[1];
+    const token =
+        match[1];
 
-    const parts = token.split(".");
+    const parts =
+        token.split(".");
 
     if (parts.length !== 2) {
         return false;
@@ -239,6 +237,7 @@ async function blynkGet(path) {
    ========================================================= */
 
 async function getBlynkStatus() {
+
     /*
        Check actual ESP32 hardware connection.
     */
@@ -311,6 +310,10 @@ async function sendDoorPress() {
         );
     }
 
+    /*
+       Send V0 = 1 to Blynk.
+    */
+
     const url =
         blynkBase() +
         "/external/api/update" +
@@ -365,17 +368,37 @@ export default async function(request) {
     }
 
     try {
+
         const url =
             new URL(request.url);
+
+        /*
+           IMPORTANT
+
+           Support both:
+
+           /api/door?action=press
+
+           AND
+
+           POST body:
+           { "action": "press" }
+
+           This fixes the "Unknown action."
+           problem without changing the frontend.
+        */
+
+        const queryAction =
+            url.searchParams.get("action");
 
         /* =================================================
            LOGIN
            ================================================= */
 
         if (
-            url.searchParams.get("action") ===
-            "login"
+            queryAction === "login"
         ) {
+
             if (
                 request.method !== "POST"
             ) {
@@ -457,6 +480,69 @@ export default async function(request) {
         }
 
         /* =================================================
+           LOGOUT
+           ================================================= */
+
+        if (
+            queryAction === "logout"
+        ) {
+
+            if (
+                request.method !== "POST"
+            ) {
+                return json(
+                    {
+                        error:
+                            "Method not allowed"
+                    },
+                    405
+                );
+            }
+
+            return json(
+                {
+                    ok: true
+                },
+                200,
+                {
+                    "Set-Cookie":
+                        COOKIE_NAME +
+                        "=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None"
+                }
+            );
+        }
+
+        /* =================================================
+           SESSION CHECK
+           ================================================= */
+
+        if (
+            queryAction === "session"
+        ) {
+
+            if (
+                request.method !== "GET"
+            ) {
+                return json(
+                    {
+                        error:
+                            "Method not allowed"
+                    },
+                    405
+                );
+            }
+
+            const authenticated =
+                verifySession(request);
+
+            return json(
+                {
+                    authenticated
+                }
+            );
+        }
+
+        /* =================================================
            AUTH CHECK
            ================================================= */
 
@@ -477,8 +563,13 @@ export default async function(request) {
            ================================================= */
 
         if (
-            request.method === "GET"
+            request.method === "GET" &&
+            (
+                !queryAction ||
+                queryAction === "status"
+            )
         ) {
+
             const status =
                 await getBlynkStatus();
 
@@ -494,6 +585,7 @@ export default async function(request) {
         if (
             request.method === "POST"
         ) {
+
             let body = {};
 
             try {
@@ -503,8 +595,31 @@ export default async function(request) {
                 body = {};
             }
 
+            /*
+               IMPORTANT FIX
+
+               Frontend sends:
+
+               POST /api/door?action=press
+
+               So first check query parameter.
+
+               Also support:
+
+               {
+                   "action": "press"
+               }
+
+               in case another frontend sends it
+               inside JSON.
+            */
+
+            const action =
+                queryAction ||
+                body.action;
+
             if (
-                body.action !== "press"
+                action !== "press"
             ) {
                 return json(
                     {
@@ -515,9 +630,9 @@ export default async function(request) {
                 );
             }
 
-            /*
-               Check ESP32 before sending command.
-            */
+            /* =============================================
+               CHECK ESP32 BEFORE SENDING COMMAND
+               ============================================= */
 
             const before =
                 await getBlynkStatus();
@@ -537,16 +652,16 @@ export default async function(request) {
                 );
             }
 
-            /*
-               Send V0 = 1
-            */
+            /* =============================================
+               SEND V0 = 1
+               ============================================= */
 
             await sendDoorPress();
 
-            /*
-               Give Blynk + ESP32 time
-               to process the command.
-            */
+            /* =============================================
+               GIVE BLYNK + ESP32 TIME
+               TO PROCESS COMMAND
+               ============================================= */
 
             await new Promise(
                 resolve =>
@@ -556,9 +671,9 @@ export default async function(request) {
                     )
             );
 
-            /*
-               Read new status.
-            */
+            /* =============================================
+               READ NEW STATUS
+               ============================================= */
 
             const after =
                 await getBlynkStatus();
@@ -579,6 +694,22 @@ export default async function(request) {
                     nextDirection:
                         after.nextDirection
                 }
+            );
+        }
+
+        /* =================================================
+           UNKNOWN GET ACTION
+           ================================================= */
+
+        if (
+            request.method === "GET"
+        ) {
+            return json(
+                {
+                    error:
+                        "Unknown action."
+                },
+                400
             );
         }
 
