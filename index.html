@@ -1,3060 +1,1473 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0,
-               maximum-scale=1.0, user-scalable=no">
-
-<meta name="theme-color" content="#070b14">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Roller Door</title>
 
 <style>
+:root{
+  --bg:#070b14;
+  --card:rgba(17,24,39,.72);
+  --border:rgba(255,255,255,.09);
+  --text:#f5f7ff;
+  --muted:#8993a8;
+  --cyan:#35d9ff;
+  --blue:#397cff;
+  --green:#32e59a;
+  --red:#ff5577;
+  --yellow:#ffd45a;
+}
 
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
-:root{
-    --bg:#070b14;
-    --card:rgba(17,24,39,.72);
-    --border:rgba(255,255,255,.09);
-    --text:#f5f7ff;
-    --muted:#8993a8;
-    --cyan:#35d9ff;
-    --blue:#397cff;
-    --green:#32e59a;
-    --red:#ff5577;
-    --yellow:#ffd45a;
-}
-
-html,
-body{
-    width:100%;
-    min-height:100%;
-    background:var(--bg);
-    color:var(--text);
-    font-family:
-        Inter,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
 
 body{
-    overflow-x:hidden;
+  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 20% 0%,rgba(57,124,255,.16),transparent 30%),
+    radial-gradient(circle at 90% 20%,rgba(53,217,255,.08),transparent 30%),
+    var(--bg);
 }
 
-/* =========================================================
-   BACKGROUND
-   ========================================================= */
-
-.bg{
-    position:fixed;
-    inset:0;
-    overflow:hidden;
-    pointer-events:none;
-    z-index:0;
+button,input{
+  font:inherit;
 }
 
-.orb{
-    position:absolute;
-    border-radius:50%;
-    filter:blur(80px);
-    opacity:.18;
-    animation:float 12s ease-in-out infinite alternate;
+/* LOGIN */
+
+#loginPage{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
 }
 
-.orb1{
-    width:260px;
-    height:260px;
-    background:#1677ff;
-    top:-90px;
-    left:-80px;
+.loginCard{
+  width:min(430px,100%);
+  padding:38px;
+  border:1px solid var(--border);
+  border-radius:28px;
+  background:rgba(13,19,32,.88);
+  box-shadow:0 30px 80px rgba(0,0,0,.55);
+  backdrop-filter:blur(20px);
 }
 
-.orb2{
-    width:300px;
-    height:300px;
-    background:#00d9ff;
-    right:-120px;
-    top:30%;
-    animation-delay:2s;
+.loginLogo{
+  width:70px;
+  height:70px;
+  margin:0 auto 20px;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#397cff,#35d9ff);
+  font-size:32px;
+  font-weight:900;
+  box-shadow:0 15px 35px rgba(57,124,255,.25);
 }
 
-.orb3{
-    width:220px;
-    height:220px;
-    background:#734cff;
-    bottom:-80px;
-    left:35%;
-    animation-delay:4s;
+.loginCard h1{
+  text-align:center;
+  font-size:27px;
+  margin-bottom:8px;
 }
 
-@keyframes float{
-
-    from{
-        transform:translate(0,0) scale(1);
-    }
-
-    to{
-        transform:translate(40px,-30px) scale(1.12);
-    }
-
+.loginCard p{
+  text-align:center;
+  color:var(--muted);
+  margin-bottom:28px;
 }
 
-/* =========================================================
-   APP
-   ========================================================= */
-
-.app{
-    position:relative;
-    z-index:1;
-    width:min(1180px,100%);
-    margin:auto;
-    padding:18px;
+.inputGroup{
+  margin-bottom:16px;
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
+.inputGroup label{
+  display:block;
+  margin-bottom:7px;
+  font-size:13px;
+  color:#aeb7c9;
+}
+
+.inputGroup input{
+  width:100%;
+  height:52px;
+  padding:0 15px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:13px;
+  outline:none;
+  color:white;
+  background:#0b111d;
+}
+
+.inputGroup input:focus{
+  border-color:var(--blue);
+}
+
+.loginButton{
+  width:100%;
+  height:54px;
+  margin-top:7px;
+  border:0;
+  border-radius:14px;
+  color:white;
+  cursor:pointer;
+  font-weight:800;
+  background:linear-gradient(135deg,#397cff,#2868e8);
+  box-shadow:0 12px 30px rgba(57,124,255,.25);
+}
+
+.loginButton:hover{
+  filter:brightness(1.08);
+}
+
+.loginError{
+  min-height:20px;
+  margin-top:14px;
+  text-align:center;
+  color:var(--red);
+  font-size:14px;
+}
+
+/* APP */
+
+#app{
+  display:none;
+  min-height:100vh;
+  padding:25px;
+}
+
+.container{
+  width:min(1400px,94%);
+  margin:auto;
+}
 
 .header{
-    height:68px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 18px;
-    border:1px solid var(--border);
-    border-radius:22px;
-    background:rgba(10,15,27,.78);
-    backdrop-filter:blur(20px);
-    box-shadow:0 20px 60px rgba(0,0,0,.25);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:28px;
 }
 
 .brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
+  display:flex;
+  align-items:center;
+  gap:14px;
 }
 
-.logo{
-    width:42px;
-    height:42px;
-    border-radius:13px;
-    display:grid;
-    place-items:center;
-    background:linear-gradient(
-        135deg,
-        var(--cyan),
-        var(--blue)
-    );
-    box-shadow:0 0 30px rgba(53,217,255,.25);
-    font-size:21px;
+.brandIcon{
+  width:50px;
+  height:50px;
+  border-radius:15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#397cff,#35d9ff);
+  font-size:22px;
+  font-weight:900;
 }
 
-.brandText strong{
-    display:block;
-    font-size:15px;
-    letter-spacing:.5px;
+.brand h1{
+  font-size:22px;
 }
 
-.brandText span{
-    display:block;
-    color:var(--muted);
-    font-size:11px;
-    margin-top:2px;
+.brand span{
+  color:var(--muted);
+  font-size:13px;
 }
 
-.connection{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:12px;
-    color:var(--muted);
+.headerRight{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.onlineBadge{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 15px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  font-size:13px;
+  font-weight:700;
 }
 
 .statusDot{
-    width:9px;
-    height:9px;
-    border-radius:50%;
-    background:var(--green);
-    box-shadow:0 0 14px var(--green);
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 12px rgba(255,85,119,.7);
 }
 
-.statusDot.offline{
-    background:var(--red);
-    box-shadow:0 0 14px var(--red);
+.onlineBadge.online .statusDot{
+  background:var(--green);
+  box-shadow:0 0 12px rgba(50,229,154,.7);
 }
 
-/* =========================================================
-   HERO
-   ========================================================= */
+.logoutButton{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  color:#ccd3df;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+}
 
 .hero{
-    padding:42px 8px 26px;
+  padding:30px;
+  margin-bottom:22px;
+  border:1px solid var(--border);
+  border-radius:24px;
+  background:linear-gradient(
+    135deg,
+    rgba(57,124,255,.11),
+    rgba(255,255,255,.025)
+  );
 }
 
-.eyebrow{
-    color:var(--cyan);
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:2.5px;
-    margin-bottom:9px;
+.hero small{
+  color:var(--cyan);
+  font-weight:800;
+  letter-spacing:2px;
 }
 
-.hero h1{
-    font-size:clamp(32px,6vw,58px);
-    line-height:1;
-    letter-spacing:-2px;
+.hero h2{
+  margin-top:10px;
+  font-size:38px;
 }
 
 .hero p{
-    color:var(--muted);
-    margin-top:12px;
-    font-size:14px;
+  margin-top:9px;
+  color:var(--muted);
 }
 
-/* =========================================================
-   GRID
-   ========================================================= */
-
-.grid{
-    display:grid;
-    grid-template-columns:1.35fr .65fr;
-    gap:18px;
+.dashboard{
+  display:grid;
+  grid-template-columns:1.5fr .8fr;
+  gap:22px;
 }
-
-/* =========================================================
-   CARD
-   ========================================================= */
 
 .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:26px;
-    backdrop-filter:blur(22px);
-    box-shadow:0 25px 80px rgba(0,0,0,.28);
-    overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:25px;
+  background:var(--card);
+  box-shadow:0 25px 70px rgba(0,0,0,.35);
+  backdrop-filter:blur(18px);
 }
 
-/* =========================================================
-   DOOR CARD
-   ========================================================= */
-
-.doorCard{
-    padding:18px;
+.sceneCard{
+  padding:20px;
 }
 
-.cardTop{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:3px 4px 15px;
+.cardHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
 }
 
-.cardTitle{
-    font-weight:800;
-    font-size:14px;
+.cardHeader h3{
+  font-size:17px;
 }
 
-.cardSub{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:3px;
+.stateText{
+  color:var(--cyan);
+  font-size:13px;
+  font-weight:800;
 }
 
-.stateBadge{
-    padding:7px 11px;
-    border-radius:999px;
-    background:rgba(255,255,255,.055);
-    border:1px solid rgba(255,255,255,.07);
-    font-size:11px;
-    font-weight:800;
-}
-
-/* =========================================================
-   SCENE
-   ========================================================= */
+/* PURE ROLLER DOOR SCENE */
 
 .scene{
-    position:relative;
-    width:100%;
-    aspect-ratio:16/9;
-    min-height:350px;
-    overflow:hidden;
-    border-radius:20px;
-
-    background:
-        linear-gradient(
-            #8ed8ff 0%,
-            #d9f4ff 65%,
-            #b4d49c 65%,
-            #8cb978 100%
-        );
-
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.15),
-        0 18px 45px rgba(0,0,0,.25);
+  position:relative;
+  width:100%;
+  height:580px;
+  overflow:hidden;
+  border-radius:19px;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(80,100,130,.10),transparent 55%),
+    #05080d;
 }
 
-/* =========================================================
-   CLOUDS
-   ========================================================= */
-
-.cloud{
-    position:absolute;
-    width:105px;
-    height:30px;
-    border-radius:40px;
-    background:rgba(255,255,255,.75);
-    filter:blur(.2px);
+.gate{
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:5%;
+  bottom:5%;
+  border:10px solid #68717b;
+  border-radius:18px;
+  background:#11161e;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.04),
+    0 30px 80px rgba(0,0,0,.65),
+    inset 0 0 45px rgba(0,0,0,.45);
 }
 
-.cloud:before,
-.cloud:after{
-    content:"";
-    position:absolute;
-    background:inherit;
-    border-radius:50%;
-}
-
-.cloud:before{
-    width:48px;
-    height:48px;
-    left:18px;
-    top:-22px;
-}
-
-.cloud:after{
-    width:62px;
-    height:62px;
-    right:8px;
-    top:-32px;
-}
-
-.cloud1{
-    top:12%;
-    left:8%;
-    transform:scale(.8);
-}
-
-.cloud2{
-    top:20%;
-    right:8%;
-    transform:scale(.65);
-}
-
-/* =========================================================
-   HOUSE
-   ========================================================= */
-
-.house{
-    position:absolute;
-    left:7%;
-    bottom:21%;
-    width:44%;
-    height:58%;
-    background:#f7f8fa;
-    border:3px solid rgba(80,70,60,.25);
-    border-radius:2px;
-    box-shadow:0 12px 25px rgba(0,0,0,.18);
-    z-index:2;
-}
-
-.roof{
-    position:absolute;
-    left:-5%;
-    top:-22%;
-    width:110%;
-    height:34%;
-    background:#704735;
-    clip-path:polygon(
-        50% 0,
-        100% 100%,
-        0 100%
+.doorOpening{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(58,78,105,.24),
+      rgba(2,5,9,.95) 75%
     );
 }
-
-.window{
-    position:absolute;
-    width:19%;
-    height:25%;
-    background:#75c9e8;
-    border:4px solid #eee;
-    box-shadow:inset 0 0 0 2px #557789;
-}
-
-.w1{
-    left:14%;
-    top:20%;
-}
-
-.w2{
-    right:14%;
-    top:20%;
-}
-
-.doorHome{
-    position:absolute;
-    bottom:0;
-    left:42%;
-    width:22%;
-    height:38%;
-    background:#754b36;
-}
-
-/* =========================================================
-   DRIVEWAY
-   ========================================================= */
-
-.driveway{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    height:23%;
-    background:#777;
-    clip-path:polygon(
-        35% 0,
-        73% 0,
-        100% 100%,
-        0 100%
-    );
-    z-index:1;
-}
-
-/* =========================================================
-   VITZ
-   ========================================================= */
-
-.car{
-    position:absolute;
-    bottom:8%;
-    left:31%;
-    width:22%;
-    height:15%;
-    background:#3c414a;
-    border-radius:20px 20px 7px 7px;
-    border:2px solid #292e36;
-    box-shadow:0 7px 15px rgba(0,0,0,.3);
-    z-index:5;
-}
-
-.car:before{
-    content:"";
-    position:absolute;
-    left:17%;
-    top:-52%;
-    width:66%;
-    height:62%;
-    background:#454b55;
-    border-radius:18px 18px 4px 4px;
-    border:2px solid #292e36;
-}
-
-.carWindow{
-    position:absolute;
-    left:25%;
-    top:-43%;
-    width:50%;
-    height:38%;
-    background:#202b38;
-    border-radius:9px 9px 2px 2px;
-    z-index:2;
-}
-
-.wheel{
-    position:absolute;
-    width:22px;
-    height:22px;
-    bottom:-9px;
-    background:#181b20;
-    border-radius:50%;
-    border:4px solid #565c66;
-}
-
-.wheel1{
-    left:15%;
-}
-
-.wheel2{
-    right:15%;
-}
-
-/* =========================================================
-   BOLERO TRUCK
-   ========================================================= */
-
-.truck{
-    position:absolute;
-    right:7%;
-    bottom:8%;
-    width:24%;
-    height:23%;
-    background:#41464e;
-    border:2px solid #292d33;
-    border-radius:8px;
-    z-index:6;
-    box-shadow:0 8px 16px rgba(0,0,0,.28);
-}
-
-.truckCab{
-    position:absolute;
-    right:0;
-    top:0;
-    width:36%;
-    height:70%;
-    background:#555b64;
-    border-radius:4px;
-}
-
-.truckGlass{
-    position:absolute;
-    right:5%;
-    top:8%;
-    width:25%;
-    height:26%;
-    background:#202a35;
-}
-
-.truckWheel{
-    position:absolute;
-    width:24px;
-    height:24px;
-    border-radius:50%;
-    background:#1a1d22;
-    border:4px solid #5b6169;
-    bottom:-11px;
-}
-
-.tw1{
-    left:14%;
-}
-
-.tw2{
-    right:12%;
-}
-
-/* =========================================================
-   ROLLER GARAGE
-   ========================================================= */
-
-.garage{
-    position:absolute;
-    right:13%;
-    bottom:21%;
-    width:31%;
-    height:58%;
-    background:#252a30;
-    border:7px solid #777d83;
-    box-shadow:0 15px 25px rgba(0,0,0,.3);
-    overflow:hidden;
-    z-index:3;
-}
-
-/* =========================================================
-   HOME / GARAGE INTERIOR
-   ========================================================= */
-
-.garageInterior{
-    position:absolute;
-    inset:0;
-    overflow:hidden;
-
-    background:
-        linear-gradient(
-            to bottom,
-            #252b32 0%,
-            #303740 62%,
-            #15191e 62%,
-            #101318 100%
-        );
-}
-
-/* Back wall */
-
-.interiorWall{
-    position:absolute;
-    left:0;
-    right:0;
-    top:0;
-    height:65%;
-
-    background:
-        repeating-linear-gradient(
-            90deg,
-            #303740 0px,
-            #303740 18px,
-            #292f36 19px,
-            #292f36 20px
-        );
-}
-
-/* Floor */
-
-.interiorFloor{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    height:36%;
-
-    background:
-        linear-gradient(
-            135deg,
-            #252a30 25%,
-            #1c2025 25%,
-            #1c2025 50%,
-            #252a30 50%,
-            #252a30 75%,
-            #1c2025 75%
-        );
-
-    background-size:24px 24px;
-}
-
-/* Warm light */
-
-.interiorLight{
-    position:absolute;
-    width:70%;
-    height:70%;
-    left:15%;
-    top:8%;
-
-    background:
-        rgba(255,220,150,.18);
-
-    filter:blur(18px);
-    border-radius:50%;
-}
-
-/* Interior window */
-
-.interiorWindow{
-    position:absolute;
-    left:12%;
-    top:15%;
-    width:28%;
-    height:27%;
-
-    background:#78c9e8;
-    border:4px solid #d5d9dc;
-
-    box-shadow:
-        0 0 18px rgba(120,201,232,.45);
-
-    z-index:2;
-}
-
-.windowLight{
-    position:absolute;
-    inset:5px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255,255,255,.45),
-            rgba(120,210,255,.1)
-        );
-}
-
-/* Sofa */
-
-.interiorSofa{
-    position:absolute;
-    left:48%;
-    bottom:23%;
-    width:35%;
-    height:22%;
-
-    background:#555d68;
-    border-radius:10px 10px 5px 5px;
-
-    box-shadow:
-        0 8px 12px rgba(0,0,0,.35);
-
-    z-index:3;
-}
-
-.interiorSofa:before{
-    content:"";
-    position:absolute;
-    left:8%;
-    right:8%;
-    top:-35%;
-    height:45%;
-
-    background:#646d78;
-    border-radius:10px 10px 3px 3px;
-}
-
-/* Interior table */
-
-.interiorTable{
-    position:absolute;
-    left:20%;
-    bottom:18%;
-    width:25%;
-    height:8%;
-
-    background:#754b36;
-    border-radius:4px;
-
-    z-index:4;
-}
-
-.interiorTable div{
-    position:absolute;
-    width:6%;
-    height:100%;
-    top:100%;
-    background:#543626;
-}
-
-.interiorTable div:nth-child(1){
-    left:12%;
-}
-
-.interiorTable div:nth-child(2){
-    left:47%;
-}
-
-.interiorTable div:nth-child(3){
-    right:12%;
-}
-
-/* =========================================================
-   SHUTTER
-   ========================================================= */
 
 .shutter{
-    position:absolute;
-    left:0;
-    right:0;
-    top:0;
-    height:100%;
-
-    transform:translateY(0%);
-
-    transition:
-        transform .08s linear;
-
-    background:#8b9299;
-
-    z-index:10;
+  position:absolute;
+  z-index:5;
+  left:0;
+  right:0;
+  top:0;
+  height:100%;
+  transform:translateY(0%);
+  transition:transform .12s linear;
+  background:#8b9299;
+  box-shadow:
+    inset 0 0 25px rgba(0,0,0,.35),
+    0 10px 25px rgba(0,0,0,.25);
 }
 
 .slat{
-    height:4.55%;
-
-    border-bottom:1px solid #666d73;
-
-    background:
-        linear-gradient(
-            to bottom,
-            #aeb4b9 0%,
-            #8c9298 45%,
-            #777e84 100%
-        );
-
-    box-shadow:
-        inset 0 1px rgba(255,255,255,.25),
-        inset 0 -1px rgba(0,0,0,.2);
+  height:4.54545%;
+  border-bottom:2px solid #59616a;
+  border-top:1px solid rgba(255,255,255,.18);
+  background:
+    linear-gradient(
+      to bottom,
+      #aeb4b9 0%,
+      #858c92 45%,
+      #70777e 100%
+    );
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.12),
+    inset 0 -2px rgba(0,0,0,.16);
 }
 
-/* Door glow */
+.gateTop{
+  position:absolute;
+  z-index:10;
+  top:-2px;
+  left:-2px;
+  right:-2px;
+  height:17px;
+  border-radius:8px;
+  background:linear-gradient(#9aa2aa,#626a72);
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+}
+
+.gateLeft,
+.gateRight{
+  position:absolute;
+  z-index:11;
+  top:0;
+  bottom:0;
+  width:11px;
+  background:linear-gradient(90deg,#9ca4ab,#555e67);
+}
+
+.gateLeft{
+  left:0;
+}
+
+.gateRight{
+  right:0;
+}
 
 .doorGlow{
-    position:absolute;
-    inset:-15px;
-    border-radius:15px;
-    border:2px solid transparent;
-    pointer-events:none;
-    transition:.3s;
-
-    z-index:20;
+  position:absolute;
+  z-index:2;
+  inset:10%;
+  border-radius:50%;
+  background:rgba(53,217,255,.08);
+  filter:blur(55px);
+  opacity:0;
+  transition:.3s;
 }
 
-.moving .doorGlow{
-    border-color:rgba(53,217,255,.65);
-
-    box-shadow:
-        0 0 25px rgba(53,217,255,.35),
-        inset 0 0 25px rgba(53,217,255,.15);
+.gate.moving .doorGlow{
+  opacity:1;
+  animation:pulseGlow 1s infinite alternate;
 }
 
-/* =========================================================
-   POSITION
-   ========================================================= */
-
-.positionWrap{
-    margin-top:15px;
+@keyframes pulseGlow{
+  from{
+    opacity:.25;
+    transform:scale(.96);
+  }
+  to{
+    opacity:.7;
+    transform:scale(1.04);
+  }
 }
 
-.positionTop{
-    display:flex;
-    justify-content:space-between;
-    color:var(--muted);
-    font-size:11px;
-    margin-bottom:7px;
+.gateLabel{
+  position:absolute;
+  z-index:20;
+  left:50%;
+  bottom:22px;
+  transform:translateX(-50%);
+  padding:8px 15px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.13);
+  background:rgba(5,8,13,.65);
+  color:#b9c3d2;
+  font-size:11px;
+  letter-spacing:2px;
+  white-space:nowrap;
 }
 
-.progress{
-    width:100%;
-    height:7px;
-    border-radius:20px;
-    background:rgba(255,255,255,.07);
-    overflow:hidden;
-}
-
-.progressBar{
-    height:100%;
-    width:0%;
-    border-radius:20px;
-
-    background:
-        linear-gradient(
-            90deg,
-            var(--cyan),
-            var(--blue)
-        );
-
-    box-shadow:
-        0 0 15px rgba(53,217,255,.4);
-
-    transition:
-        width .08s linear;
-}
-
-/* =========================================================
-   CONTROL CARD
-   ========================================================= */
+/* CONTROL */
 
 .controlCard{
-    padding:24px;
-    display:flex;
-    flex-direction:column;
+  padding:24px;
 }
 
-.controlHeader{
-    margin-bottom:25px;
+.controlTitle{
+  font-size:13px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  margin-bottom:10px;
 }
 
-.controlHeader h2{
-    font-size:22px;
+.bigState{
+  font-size:31px;
+  font-weight:900;
+  margin-bottom:7px;
 }
 
-.controlHeader p{
-    color:var(--muted);
-    font-size:12px;
-    margin-top:6px;
+.positionText{
+  color:var(--muted);
+  margin-bottom:25px;
 }
 
-.bigButton{
-    position:relative;
-    width:100%;
-    aspect-ratio:1;
-    max-width:280px;
-    margin:auto;
-
-    border:0;
-    border-radius:50%;
-
-    cursor:pointer;
-
-    color:white;
-
-    background:
-        radial-gradient(
-            circle at 50% 38%,
-            #59e7ff 0%,
-            #2689ff 35%,
-            #2351c7 70%,
-            #182d75 100%
-        );
-
-    box-shadow:
-        0 0 0 10px rgba(53,217,255,.05),
-        0 20px 50px rgba(35,81,199,.3),
-        inset 0 2px 8px rgba(255,255,255,.3);
-
-    transition:.2s;
-
-    overflow:hidden;
-
-    -webkit-tap-highlight-color:transparent;
+.controlButton{
+  position:relative;
+  overflow:hidden;
+  width:100%;
+  min-height:170px;
+  border:0;
+  border-radius:25px;
+  cursor:pointer;
+  color:#fff;
+  background:
+    linear-gradient(
+      135deg,
+      #397cff 0%,
+      #2868e8 45%,
+      #1c54c9 100%
+    );
+  box-shadow:
+    0 15px 35px rgba(57,124,255,.28),
+    inset 0 1px rgba(255,255,255,.22);
+  transition:
+    transform .18s,
+    box-shadow .18s;
 }
 
-.bigButton:hover{
-    transform:
-        translateY(-3px)
-        scale(1.015);
+.controlButton:hover{
+  box-shadow:
+    0 20px 45px rgba(57,124,255,.42),
+    inset 0 1px rgba(255,255,255,.25);
 }
 
-.bigButton:active{
-    transform:scale(.97);
+.controlButton:active{
+  transform:scale(.975);
 }
 
-.bigButton:disabled{
-    opacity:.7;
-    cursor:not-allowed;
+.controlIcon{
+  font-size:43px;
+  display:block;
+  margin-bottom:8px;
 }
 
-.buttonInner{
-    position:absolute;
-    inset:16%;
-
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,.22);
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    background:rgba(0,0,0,.08);
+.controlText{
+  font-size:24px;
+  font-weight:900;
 }
 
-.buttonIcon{
-    font-size:40px;
-    line-height:1;
-    margin-bottom:10px;
+.controlSub{
+  display:block;
+  margin-top:7px;
+  opacity:.75;
+  font-size:12px;
 }
 
-.buttonLabel{
-    font-size:20px;
-    font-weight:900;
-    letter-spacing:1px;
+.infoGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:20px;
 }
 
-.buttonHint{
-    font-size:10px;
-    opacity:.72;
-    margin-top:5px;
+.infoBox{
+  padding:15px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:rgba(255,255,255,.025);
 }
 
-.ripple{
-    position:absolute;
-    width:20px;
-    height:20px;
-    border-radius:50%;
-
-    background:rgba(255,255,255,.5);
-
-    transform:
-        translate(-50%,-50%)
-        scale(0);
-
-    animation:
-        ripple .65s ease-out;
-
-    pointer-events:none;
+.infoBox span{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:6px;
+  text-transform:uppercase;
 }
 
-@keyframes ripple{
-
-    to{
-        transform:
-            translate(-50%,-50%)
-            scale(20);
-
-        opacity:0;
-    }
-
+.infoBox strong{
+  font-size:15px;
 }
-
-/* =========================================================
-   INFO
-   ========================================================= */
-
-.info{
-    margin-top:25px;
-
-    display:flex;
-    flex-direction:column;
-    gap:1px;
-
-    border-radius:15px;
-    overflow:hidden;
-}
-
-.infoRow{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    padding:13px 14px;
-
-    background:rgba(255,255,255,.035);
-
-    font-size:12px;
-}
-
-.infoRow span:first-child{
-    color:var(--muted);
-}
-
-.value{
-    font-weight:700;
-}
-
-.onlineText{
-    color:var(--green);
-}
-
-.offlineText{
-    color:var(--red);
-}
-
-/* =========================================================
-   COMMAND
-   ========================================================= */
-
-.command{
-    margin-top:auto;
-    padding-top:20px;
-
-    text-align:center;
-
-    color:var(--muted);
-    font-size:11px;
-}
-
-.command strong{
-    color:var(--text);
-}
-
-/* =========================================================
-   TOAST
-   ========================================================= */
-
-.toast{
-    position:fixed;
-    z-index:50;
-
-    left:50%;
-    bottom:25px;
-
-    transform:
-        translate(-50%,30px);
-
-    opacity:0;
-
-    pointer-events:none;
-
-    padding:12px 17px;
-
-    border-radius:14px;
-
-    background:
-        rgba(13,19,32,.92);
-
-    border:
-        1px solid rgba(255,255,255,.1);
-
-    backdrop-filter:blur(15px);
-
-    box-shadow:
-        0 15px 40px rgba(0,0,0,.4);
-
-    font-size:12px;
-
-    transition:.3s;
-
-    white-space:nowrap;
-}
-
-.toast.show{
-    opacity:1;
-
-    transform:
-        translate(-50%,0);
-}
-
-/* =========================================================
-   FOOTER
-   ========================================================= */
 
 .footer{
-    text-align:center;
-
-    color:#596275;
-
-    font-size:10px;
-
-    padding:22px 0 5px;
+  text-align:center;
+  color:#596376;
+  font-size:12px;
+  margin:25px 0;
 }
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media(max-width:800px){
-
-    .app{
-        padding:12px;
-    }
-
-    .header{
-        height:60px;
-        border-radius:18px;
-    }
-
-    .hero{
-        padding:30px 5px 20px;
-    }
-
-    .hero h1{
-        letter-spacing:-1.3px;
-    }
-
-    .grid{
-        grid-template-columns:1fr;
-    }
-
-    .scene{
-        min-height:250px;
-    }
-
-    .controlCard{
-        padding:20px;
-    }
-
-    .bigButton{
-        width:min(260px,75vw);
-    }
-
+@media(max-width:950px){
+  .dashboard{
+    grid-template-columns:1fr;
+  }
 }
 
-@media(max-width:430px){
+@media(max-width:650px){
+  #app{
+    padding:14px;
+  }
 
-    .brandText strong{
-        font-size:13px;
-    }
+  .container{
+    width:100%;
+  }
 
-    .brandText span{
-        font-size:9px;
-    }
+  .header{
+    align-items:flex-start;
+  }
 
-    .connection{
-        font-size:10px;
-    }
+  .brand h1{
+    font-size:18px;
+  }
 
-    .hero h1{
-        font-size:34px;
-    }
+  .onlineBadge{
+    font-size:11px;
+    padding:8px 10px;
+  }
 
-    .hero p{
-        font-size:12px;
-    }
+  .logoutButton{
+    padding:8px 10px;
+    font-size:12px;
+  }
 
-    .scene{
-        aspect-ratio:4/3;
-    }
+  .hero{
+    padding:22px;
+  }
 
-    .garage{
-        right:9%;
-        width:35%;
-    }
+  .hero h2{
+    font-size:28px;
+  }
 
-    .house{
-        left:4%;
-        width:48%;
-    }
+  .scene{
+    height:420px;
+  }
 
-    .car{
-        left:31%;
-        width:24%;
-    }
+  .gate{
+    left:4%;
+    right:4%;
+  }
 
-    .truck{
-        right:3%;
-        width:27%;
-    }
-
+  .controlButton{
+    min-height:145px;
+  }
 }
-
 </style>
-
 </head>
 
 <body>
 
-<div class="bg">
+<!-- LOGIN -->
 
-    <div class="orb orb1"></div>
-    <div class="orb orb2"></div>
-    <div class="orb orb3"></div>
+<section id="loginPage">
+  <div class="loginCard">
 
-</div>
+    <div class="loginLogo">🚪</div>
 
-<div class="app">
+    <h1>Smart Roller Door</h1>
+    <p>Secure Remote Control System</p>
 
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
+    <form id="loginForm">
 
-    <header class="header">
+      <div class="inputGroup">
+        <label>Username</label>
+        <input
+          id="username"
+          type="text"
+          autocomplete="username"
+          placeholder="Enter username"
+          required
+        >
+      </div>
 
-        <div class="brand">
+      <div class="inputGroup">
+        <label>Password</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter password"
+          required
+        >
+      </div>
 
-            <div class="logo">
-                🚪
-            </div>
+      <button class="loginButton" type="submit">
+        LOGIN
+      </button>
 
-            <div class="brandText">
+      <div id="loginError" class="loginError"></div>
 
-                <strong>
-                    SMART DOOR
-                </strong>
+    </form>
 
-                <span>
-                    ROLLER DOOR CONTROL
-                </span>
+  </div>
+</section>
 
-            </div>
+
+<!-- MAIN APP -->
+
+<section id="app">
+
+<div class="container">
+
+  <header class="header">
+
+    <div class="brand">
+      <div class="brandIcon">🚪</div>
+
+      <div>
+        <h1>Smart Roller Door</h1>
+        <span>Remote Roller Door System</span>
+      </div>
+    </div>
+
+    <div class="headerRight">
+
+      <div id="onlineBadge" class="onlineBadge">
+        <span class="statusDot"></span>
+        <span id="onlineText">OFFLINE</span>
+      </div>
+
+      <button id="logoutButton" class="logoutButton">
+        Logout
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <section class="hero">
+
+    <small>REMOTE CONTROL SYSTEM</small>
+
+    <h2>Roller Door</h2>
+
+    <p>
+      Smart one-button control from anywhere.
+    </p>
+
+  </section>
+
+
+  <main class="dashboard">
+
+    <!-- SCENE -->
+
+    <section class="card sceneCard">
+
+      <div class="cardHeader">
+
+        <h3>Door Visualization</h3>
+
+        <span id="sceneState" class="stateText">
+          CLOSED
+        </span>
+
+      </div>
+
+      <div id="scene" class="scene">
+
+        <div id="gate" class="gate">
+
+          <div class="doorOpening"></div>
+
+          <div id="shutter" class="shutter">
+
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+            <div class="slat"></div>
+
+          </div>
+
+          <div class="gateTop"></div>
+          <div class="gateLeft"></div>
+          <div class="gateRight"></div>
+
+          <div class="doorGlow"></div>
+
+          <div class="gateLabel">
+            SMART ROLLER GATE
+          </div>
 
         </div>
 
-        <div class="connection">
-
-            <div
-                id="statusDot"
-                class="statusDot">
-            </div>
-
-            <span id="connectionText">
-                ONLINE
-            </span>
-
-        </div>
-
-    </header>
-
-
-    <!-- =====================================================
-         HERO
-         ===================================================== -->
-
-    <section class="hero">
-
-        <div class="eyebrow">
-            REMOTE CONTROL SYSTEM
-        </div>
-
-        <h1>
-            Roller Door
-        </h1>
-
-        <p>
-            Smart one-button control from anywhere.
-        </p>
+      </div>
 
     </section>
 
 
-    <!-- =====================================================
-         MAIN
-         ===================================================== -->
+    <!-- CONTROL -->
 
-    <main class="grid">
+    <section class="card controlCard">
 
+      <div class="controlTitle">
+        Current Door State
+      </div>
 
-        <!-- =================================================
-             DOOR CARD
-             ================================================= -->
+      <div id="bigState" class="bigState">
+        CLOSED
+      </div>
 
-        <section class="card doorCard">
+      <div class="positionText">
+        Position:
+        <strong id="positionValue">0%</strong>
+      </div>
 
-            <div class="cardTop">
 
-                <div>
+      <button id="controlButton" class="controlButton">
 
-                    <div class="cardTitle">
-                        Garage View
-                    </div>
+        <span id="controlIcon" class="controlIcon">
+          ↑
+        </span>
 
-                    <div class="cardSub">
-                        Software-estimated door position
-                    </div>
+        <span id="controlText" class="controlText">
+          OPEN
+        </span>
 
-                </div>
+        <span id="controlSub" class="controlSub">
+          Press to open the door
+        </span>
 
-                <div
-                    id="stateBadge"
-                    class="stateBadge">
-                    CLOSED
-                </div>
+      </button>
 
-            </div>
 
+      <div class="infoGrid">
 
-            <!-- =================================================
-                 SCENE
-                 ================================================= -->
+        <div class="infoBox">
+          <span>Door State</span>
+          <strong id="infoState">CLOSED</strong>
+        </div>
 
-            <div
-                id="scene"
-                class="scene">
+        <div class="infoBox">
+          <span>Next Direction</span>
+          <strong id="infoNext">OPEN</strong>
+        </div>
 
+        <div class="infoBox">
+          <span>Position</span>
+          <strong id="infoPosition">0%</strong>
+        </div>
 
-                <!-- CLOUDS -->
+        <div class="infoBox">
+          <span>Connection</span>
+          <strong id="infoConnection">OFFLINE</strong>
+        </div>
 
-                <div class="cloud cloud1"></div>
-                <div class="cloud cloud2"></div>
+      </div>
 
+    </section>
 
-                <!-- =================================================
-                     HOUSE
-                     ================================================= -->
+  </main>
 
-                <div class="house">
 
-                    <div class="roof"></div>
-
-                    <div class="window w1"></div>
-                    <div class="window w2"></div>
-
-                    <div class="doorHome"></div>
-
-                </div>
-
-
-                <!-- DRIVEWAY -->
-
-                <div class="driveway"></div>
-
-
-                <!-- =================================================
-                     TOYOTA VITZ
-                     ================================================= -->
-
-                <div class="car">
-
-                    <div class="carWindow"></div>
-
-                    <div class="wheel wheel1"></div>
-                    <div class="wheel wheel2"></div>
-
-                </div>
-
-
-                <!-- =================================================
-                     BOLERO TRUCK
-                     ================================================= -->
-
-                <div class="truck">
-
-                    <div class="truckCab"></div>
-
-                    <div class="truckGlass"></div>
-
-                    <div class="truckWheel tw1"></div>
-                    <div class="truckWheel tw2"></div>
-
-                </div>
-
-
-                <!-- =================================================
-                     GARAGE
-                     ================================================= -->
-
-                <div
-                    id="garage"
-                    class="garage">
-
-
-                    <!-- =================================================
-                         GARAGE / HOME INTERIOR
-                         ================================================= -->
-
-                    <div class="garageInterior">
-
-                        <div class="interiorWall"></div>
-
-                        <div class="interiorFloor"></div>
-
-                        <div class="interiorLight"></div>
-
-
-                        <!-- INTERIOR WINDOW -->
-
-                        <div class="interiorWindow">
-
-                            <div class="windowLight"></div>
-
-                        </div>
-
-
-                        <!-- SOFA -->
-
-                        <div class="interiorSofa"></div>
-
-
-                        <!-- TABLE -->
-
-                        <div class="interiorTable">
-
-                            <div></div>
-                            <div></div>
-                            <div></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- =================================================
-                         ROLLER SHUTTER
-                         ================================================= -->
-
-                    <div
-                        id="shutter"
-                        class="shutter">
-
-
-                        <!-- 22 METAL SLATS -->
-
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-                        <div class="slat"></div>
-
-                    </div>
-
-
-                    <!-- DOOR GLOW -->
-
-                    <div class="doorGlow"></div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 POSITION
-                 ================================================= -->
-
-            <div class="positionWrap">
-
-                <div class="positionTop">
-
-                    <span>
-                        DOOR POSITION
-                    </span>
-
-                    <strong id="positionText">
-                        0%
-                    </strong>
-
-                </div>
-
-                <div class="progress">
-
-                    <div
-                        id="progressBar"
-                        class="progressBar">
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             CONTROL CARD
-             ================================================= -->
-
-        <section class="card controlCard">
-
-            <div class="controlHeader">
-
-                <h2>
-                    Control
-                </h2>
-
-                <p>
-                    The button behaves like your original
-                    one-button wall switch.
-                </p>
-
-            </div>
-
-
-            <!-- BUTTON -->
-
-            <button
-                id="doorButton"
-                class="bigButton"
-                onclick="doorButton(event)">
-
-                <div class="buttonInner">
-
-                    <div
-                        id="buttonIcon"
-                        class="buttonIcon">
-                        ↑
-                    </div>
-
-                    <div
-                        id="buttonLabel"
-                        class="buttonLabel">
-                        OPEN
-                    </div>
-
-                    <div class="buttonHint">
-                        TAP TO CONTROL
-                    </div>
-
-                </div>
-
-            </button>
-
-
-            <!-- =================================================
-                 INFO
-                 ================================================= -->
-
-            <div class="info">
-
-                <div class="infoRow">
-
-                    <span>
-                        Connection
-                    </span>
-
-                    <span
-                        id="infoConnection"
-                        class="value onlineText">
-                        Online
-                    </span>
-
-                </div>
-
-
-                <div class="infoRow">
-
-                    <span>
-                        Door State
-                    </span>
-
-                    <span
-                        id="infoState"
-                        class="value">
-                        Closed
-                    </span>
-
-                </div>
-
-
-                <div class="infoRow">
-
-                    <span>
-                        Last Command
-                    </span>
-
-                    <span
-                        id="lastCommand"
-                        class="value">
-                        —
-                    </span>
-
-                </div>
-
-
-                <div class="infoRow">
-
-                    <span>
-                        Controller
-                    </span>
-
-                    <span class="value">
-                        ESP32
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="command">
-
-                Next direction:
-
-                <strong id="nextDirection">
-                    OPEN
-                </strong>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- FOOTER -->
-
-    <footer class="footer">
-        Smart Roller Door • ESP32 Control System
-    </footer>
+  <div class="footer">
+    Smart Roller Door • ESP32 + Blynk
+  </div>
 
 </div>
 
-
-<!-- TOAST -->
-
-<div
-    id="toast"
-    class="toast">
-    Command sent
-</div>
+</section>
 
 
 <script>
 
-/* =========================================================
-   SMART ROLLER DOOR
-
-   GitHub Pages
-        ↓
-   Netlify Function
-        ↓
-   Blynk Cloud
-        ↓
-   ESP32
-   ========================================================= */
-
+/* ================================
+   CONFIGURATION
+================================ */
 
 const API_URL =
-    "https://smart-roller-door.netlify.app/api/door";
+  "https://smart-roller-door.netlify.app/api/door";
+
+const TRAVEL_TIME = 11920;
 
 
-const TRAVEL_TIME =
-    11920;
-
+/* ================================
+   STATE
+================================ */
 
 let position = 0;
-
-let state =
-    "CLOSED";
-
-let nextDirection =
-    "OPEN";
-
-let online =
-    false;
-
-let loggedIn =
-    false;
-
-let busy =
-    false;
-
-let pollTimer =
-    null;
-
-let movementTimer =
-    null;
-
-let lastServerPosition =
-    0;
-
-let lastServerState =
-    "CLOSED";
+let state = "CLOSED";
+let nextDirection = "OPEN";
+let online = false;
+let busy = false;
+let pollTimer = null;
 
 
-/* =========================================================
-   UI ELEMENTS
-   ========================================================= */
+/* ================================
+   ELEMENTS
+================================ */
 
-const scene =
-    document.getElementById(
-        "scene"
-    );
+const loginPage =
+  document.getElementById("loginPage");
 
-const shutter =
-    document.getElementById(
-        "shutter"
-    );
+const app =
+  document.getElementById("app");
 
-const stateBadge =
-    document.getElementById(
-        "stateBadge"
-    );
+const loginForm =
+  document.getElementById("loginForm");
 
-const positionText =
-    document.getElementById(
-        "positionText"
-    );
+const loginError =
+  document.getElementById("loginError");
 
-const progressBar =
-    document.getElementById(
-        "progressBar"
-    );
+const usernameInput =
+  document.getElementById("username");
 
-const buttonLabel =
-    document.getElementById(
-        "buttonLabel"
-    );
+const passwordInput =
+  document.getElementById("password");
 
-const buttonIcon =
-    document.getElementById(
-        "buttonIcon"
-    );
+const logoutButton =
+  document.getElementById("logoutButton");
+
+const onlineBadge =
+  document.getElementById("onlineBadge");
+
+const onlineText =
+  document.getElementById("onlineText");
+
+const sceneState =
+  document.getElementById("sceneState");
+
+const bigState =
+  document.getElementById("bigState");
+
+const positionValue =
+  document.getElementById("positionValue");
 
 const infoState =
-    document.getElementById(
-        "infoState"
-    );
+  document.getElementById("infoState");
 
-const lastCommand =
-    document.getElementById(
-        "lastCommand"
-    );
+const infoNext =
+  document.getElementById("infoNext");
 
-const nextDirectionText =
-    document.getElementById(
-        "nextDirection"
-    );
-
-const doorBtn =
-    document.getElementById(
-        "doorButton"
-    );
-
-const statusDot =
-    document.getElementById(
-        "statusDot"
-    );
-
-const connectionText =
-    document.getElementById(
-        "connectionText"
-    );
+const infoPosition =
+  document.getElementById("infoPosition");
 
 const infoConnection =
-    document.getElementById(
-        "infoConnection"
-    );
+  document.getElementById("infoConnection");
 
-const toastElement =
-    document.getElementById(
-        "toast"
-    );
+const controlButton =
+  document.getElementById("controlButton");
 
+const controlIcon =
+  document.getElementById("controlIcon");
 
-/* =========================================================
-   LOGIN SCREEN
-   ========================================================= */
+const controlText =
+  document.getElementById("controlText");
 
-function createLoginScreen(){
+const controlSub =
+  document.getElementById("controlSub");
 
-    if(
-        document.getElementById(
-            "loginScreen"
-        )
-    )
-        return;
+const gate =
+  document.getElementById("gate");
 
+const shutter =
+  document.getElementById("shutter");
 
-    const login =
-        document.createElement(
-            "div"
-        );
 
+/* ================================
+   API REQUEST
+================================ */
 
-    login.id =
-        "loginScreen";
+async function apiRequest(
+  url,
+  options = {}
+){
 
-
-    login.innerHTML = `
-
-        <div style="
-            position:fixed;
-            inset:0;
-            z-index:9999;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            padding:20px;
-
-            background:
-                radial-gradient(
-                    circle at 20% 20%,
-                    rgba(53,217,255,.12),
-                    transparent 35%
-                ),
-                radial-gradient(
-                    circle at 80% 80%,
-                    rgba(57,124,255,.12),
-                    transparent 35%
-                ),
-                #070b14;
-        ">
-
-            <div style="
-                width:min(400px,100%);
-                padding:32px;
-                border-radius:28px;
-
-                background:
-                    rgba(17,24,39,.82);
-
-                border:
-                    1px solid rgba(255,255,255,.1);
-
-                backdrop-filter:blur(25px);
-
-                box-shadow:
-                    0 30px 100px rgba(0,0,0,.5);
-
-                color:white;
-                text-align:center;
-            ">
-
-                <div style="
-                    width:64px;
-                    height:64px;
-                    margin:0 auto 18px;
-
-                    display:grid;
-                    place-items:center;
-
-                    border-radius:20px;
-
-                    background:
-                        linear-gradient(
-                            135deg,
-                            #35d9ff,
-                            #397cff
-                        );
-
-                    font-size:30px;
-                ">
-                    🚪
-                </div>
-
-
-                <div style="
-                    font-size:11px;
-                    letter-spacing:2px;
-                    color:#35d9ff;
-                    font-weight:800;
-                    margin-bottom:8px;
-                ">
-                    SMART ROLLER DOOR
-                </div>
-
-
-                <h2 style="
-                    margin:0;
-                    font-size:27px;
-                ">
-                    Welcome Back
-                </h2>
-
-
-                <p style="
-                    color:#8993a8;
-                    font-size:13px;
-                    margin:9px 0 25px;
-                ">
-                    Sign in to control your door.
-                </p>
-
-
-                <input
-                    id="loginPassword"
-                    type="password"
-                    placeholder="Enter password"
-                    autocomplete="current-password"
-
-                    style="
-                        width:100%;
-                        height:52px;
-                        padding:0 16px;
-
-                        border-radius:15px;
-
-                        border:
-                            1px solid
-                            rgba(255,255,255,.1);
-
-                        outline:none;
-
-                        background:
-                            rgba(255,255,255,.05);
-
-                        color:white;
-
-                        font-size:14px;
-
-                        margin-bottom:12px;
-                    "
-                >
-
-
-                <button
-                    id="loginButton"
-
-                    style="
-                        width:100%;
-                        height:52px;
-
-                        border:0;
-                        border-radius:15px;
-
-                        color:white;
-
-                        font-size:14px;
-                        font-weight:800;
-
-                        cursor:pointer;
-
-                        background:
-                            linear-gradient(
-                                135deg,
-                                #35d9ff,
-                                #397cff
-                            );
-
-                        box-shadow:
-                            0 10px 30px
-                            rgba(53,217,255,.18);
-                    "
-                >
-                    LOGIN
-                </button>
-
-
-                <div
-                    id="loginError"
-
-                    style="
-                        min-height:18px;
-                        margin-top:13px;
-
-                        color:#ff5577;
-
-                        font-size:12px;
-                    "
-                ></div>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    document.body.appendChild(
-        login
-    );
-
-
-    const password =
-        document.getElementById(
-            "loginPassword"
-        );
-
-
-    const button =
-        document.getElementById(
-            "loginButton"
-        );
-
-
-    password.addEventListener(
-        "keydown",
-        e => {
-
-            if(
-                e.key === "Enter"
-            )
-                loginUser();
-
+  const response =
+    await fetch(
+      url,
+      {
+        credentials:"include",
+        ...options,
+        headers:{
+          "Content-Type":"application/json",
+          ...(options.headers || {})
         }
+      }
     );
 
+  let data = {};
 
-    button.onclick =
-        loginUser;
+  try{
+    data = await response.json();
+  }catch(e){}
 
+  if(!response.ok){
+
+    const message =
+      data.error ||
+      "Request failed";
+
+    throw new Error(message);
+  }
+
+  return data;
 }
 
 
-/* =========================================================
+/* ================================
    LOGIN
-   ========================================================= */
+================================ */
 
-async function loginUser(){
+loginForm.addEventListener(
+  "submit",
+  async function(e){
+
+    e.preventDefault();
+
+    loginError.textContent = "";
+
+    const username =
+      usernameInput.value.trim();
 
     const password =
-        document.getElementById(
-            "loginPassword"
-        ).value;
+      passwordInput.value;
 
-
-    const error =
-        document.getElementById(
-            "loginError"
-        );
-
-
-    const button =
-        document.getElementById(
-            "loginButton"
-        );
-
-
-    if(!password){
-
-        error.textContent =
-            "Enter your password.";
-
-        return;
+    if(!username || !password){
+      loginError.textContent =
+        "Enter username and password.";
+      return;
     }
 
+    const button =
+      loginForm.querySelector("button");
 
-    button.disabled =
-        true;
-
-    button.textContent =
-        "CHECKING...";
-
-    error.textContent =
-        "";
-
+    button.disabled = true;
+    button.textContent = "LOGIN...";
 
     try{
 
-        const response =
-            await fetch(
-
-                API_URL +
-                "?action=login",
-
-                {
-                    method:"POST",
-
-                    credentials:"include",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            password
-                        })
-                }
-
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if(!response.ok){
-
-            throw new Error(
-                data.error ||
-                "Login failed"
-            );
+      await apiRequest(
+        API_URL + "?action=login",
+        {
+          method:"POST",
+          body:JSON.stringify({
+            username,
+            password
+          })
         }
+      );
 
+      passwordInput.value = "";
 
-        loggedIn =
-            true;
+      showApp();
 
+      await syncFromBlynk();
 
-        document
-            .getElementById(
-                "loginScreen"
-            )
-            .remove();
-
-
-        toast(
-            "Login successful"
-        );
-
-
-        await syncFromBlynk();
-
-
-        startPolling();
-
+      startPolling();
 
     }catch(error){
 
-        error.textContent =
-            error.message ||
-            "Login failed.";
+      loginError.textContent =
+        error.message || "Login failed.";
 
     }finally{
 
-        button.disabled =
-            false;
-
-        button.textContent =
-            "LOGIN";
+      button.disabled = false;
+      button.textContent = "LOGIN";
 
     }
+
+  }
+);
+
+
+/* ================================
+   SHOW APP
+================================ */
+
+function showApp(){
+
+  loginPage.style.display = "none";
+  app.style.display = "block";
 
 }
 
 
-/* =========================================================
-   API REQUEST
-   ========================================================= */
-
-async function apiRequest(
-    method = "GET",
-    body = null
-){
-
-    const options = {
-
-        method,
-
-        credentials:
-            "include",
-
-        headers:{
-            "Accept":
-                "application/json"
-        }
-
-    };
-
-
-    if(body !== null){
-
-        options.headers[
-            "Content-Type"
-        ] =
-            "application/json";
-
-        options.body =
-            JSON.stringify(
-                body
-            );
-
-    }
-
-
-    const response =
-        await fetch(
-            API_URL,
-            options
-        );
-
-
-    let data = {};
-
-
-    try{
-
-        data =
-            await response.json();
-
-    }catch{
-
-        data = {};
-
-    }
-
-
-    if(
-        response.status === 401
-    ){
-
-        loggedIn =
-            false;
-
-        showLogin();
-
-        throw new Error(
-            "Session expired"
-        );
-
-    }
-
-
-    if(!response.ok){
-
-        throw new Error(
-            data.error ||
-            "Server error"
-        );
-
-    }
-
-
-    return data;
-
-}
-
-
-/* =========================================================
+/* ================================
    SHOW LOGIN
-   ========================================================= */
+================================ */
 
 function showLogin(){
 
-    if(
-        document.getElementById(
-            "loginScreen"
-        )
-    )
-        return;
+  app.style.display = "none";
+  loginPage.style.display = "flex";
 
-    createLoginScreen();
+  stopPolling();
 
 }
 
 
-/* =========================================================
-   SYNC BLYNK
-   ========================================================= */
+/* ================================
+   CHECK SESSION
+================================ */
+
+async function checkSession(){
+
+  try{
+
+    const result =
+      await apiRequest(
+        API_URL + "?action=session"
+      );
+
+    if(result.authenticated){
+
+      showApp();
+
+      await syncFromBlynk();
+
+      startPolling();
+
+    }else{
+
+      showLogin();
+
+    }
+
+  }catch(error){
+
+    showLogin();
+
+  }
+
+}
+
+
+/* ================================
+   LOGOUT
+================================ */
+
+logoutButton.addEventListener(
+  "click",
+  async function(){
+
+    try{
+
+      await apiRequest(
+        API_URL + "?action=logout",
+        {
+          method:"POST"
+        }
+      );
+
+    }catch(error){}
+
+    showLogin();
+
+  }
+);
+
+
+/* ================================
+   BLYNK STATUS
+================================ */
 
 async function syncFromBlynk(){
 
-    try{
+  try{
 
-        const data =
-            await apiRequest(
-                "GET"
-            );
+    const data =
+      await apiRequest(
+        API_URL + "?action=status"
+      );
 
+    if(data){
 
-        if(
-            data.deviceOnline !==
-            undefined
-        ){
+      if(
+        data.state !== undefined &&
+        data.state !== null
+      ){
+        state =
+          String(data.state).toUpperCase();
+      }
 
-            setOnline(
-                data.deviceOnline
-            );
+      if(
+        data.position !== undefined &&
+        data.position !== null
+      ){
+        position =
+          Number(data.position);
+      }
 
-        }
+      if(
+        data.nextDirection !== undefined &&
+        data.nextDirection !== null
+      ){
+        nextDirection =
+          String(data.nextDirection).toUpperCase();
+      }
 
+      online = true;
 
-        if(
-            data.state !==
-            undefined
-        ){
-
-            state =
-                normalizeState(
-                    data.state
-                );
-
-        }
-
-
-        if(
-            data.position !==
-            undefined
-        ){
-
-            position =
-                Number(
-                    data.position
-                );
-
-        }
-
-
-        if(
-            data.nextDirection !==
-            undefined
-        ){
-
-            nextDirection =
-                String(
-                    data.nextDirection
-                ).toUpperCase();
-
-        }
-
-
-        lastServerPosition =
-            position;
-
-        lastServerState =
-            state;
-
-
-        updateUI();
-
-    }catch(error){
-
-        console.error(
-            "Status:",
-            error
-        );
-
-        setOnline(
-            false
-        );
+      updateUI();
 
     }
 
-}
+  }catch(error){
 
+    online = false;
 
-/* =========================================================
-   STATE NORMALIZATION
-   ========================================================= */
+    updateUI();
 
-function normalizeState(
-    value
-){
-
-    value =
-        String(
-            value || ""
-        )
-        .trim()
-        .toUpperCase();
-
-
-    if(
-        value ===
-        "OPENING"
-    )
-        return "OPENING";
-
-
-    if(
-        value ===
-        "CLOSING"
-    )
-        return "CLOSING";
-
-
-    if(
-        value ===
-        "STOPPED"
-    )
-        return "STOPPED";
-
-
-    if(
-        value ===
-        "OPEN"
-    )
-        return "OPEN";
-
-
-    return "CLOSED";
+  }
 
 }
 
 
-/* =========================================================
-   ONLINE / OFFLINE
-   ========================================================= */
+/* ================================
+   SEND BUTTON PRESS
+================================ */
 
-function setOnline(
-    value
-){
+async function sendDoorCommand(){
 
-    online =
-        Boolean(
-            value
-        );
+  if(busy) return;
 
+  if(!online){
 
-    if(online){
+    await syncFromBlynk();
 
-        if(statusDot)
-            statusDot.classList.remove(
-                "offline"
-            );
+    if(!online){
+      return;
+    }
 
+  }
 
-        if(connectionText)
-            connectionText.textContent =
-                "ONLINE";
+  busy = true;
 
+  controlButton.disabled = true;
 
-        if(infoConnection){
+  const oldState = state;
 
-            infoConnection.textContent =
-                "Online";
+  try{
 
-            infoConnection.className =
-                "value onlineText";
-
-        }
-
-    }else{
-
-        if(statusDot)
-            statusDot.classList.add(
-                "offline"
-            );
+    await apiRequest(
+      API_URL + "?action=press",
+      {
+        method:"POST"
+      }
+    );
 
 
-        if(connectionText)
-            connectionText.textContent =
-                "OFFLINE";
+    /*
+      Immediate UI feedback
+      while Blynk/ESP32 updates.
+    */
 
+    if(oldState === "CLOSED"){
 
-        if(infoConnection){
+      state = "OPENING";
+      nextDirection = "CLOSE";
 
-            infoConnection.textContent =
-                "Offline";
+    }else if(oldState === "OPENING"){
 
-            infoConnection.className =
-                "value offlineText";
+      state = "STOPPED";
+      nextDirection = "CLOSE";
 
-        }
+    }else if(oldState === "OPEN"){
+
+      state = "CLOSING";
+      nextDirection = "OPEN";
+
+    }else if(oldState === "CLOSING"){
+
+      state = "STOPPED";
+      nextDirection = "OPEN";
+
+    }else if(oldState === "STOPPED"){
+
+      if(nextDirection === "OPEN"){
+
+        state = "OPENING";
+        nextDirection = "CLOSE";
+
+      }else{
+
+        state = "CLOSING";
+        nextDirection = "OPEN";
+
+      }
 
     }
 
+    updateUI();
+
+    setTimeout(
+      syncFromBlynk,
+      350
+    );
+
+  }catch(error){
+
+    alert(
+      error.message ||
+      "Door command failed."
+    );
+
+  }finally{
+
+    setTimeout(
+      function(){
+        busy = false;
+        controlButton.disabled = false;
+      },
+      700
+    );
+
+  }
+
 }
 
 
-/* =========================================================
-   UI UPDATE
-   ========================================================= */
+/* ================================
+   BUTTON
+================================ */
+
+controlButton.addEventListener(
+  "click",
+  sendDoorCommand
+);
+
+
+/* ================================
+   UPDATE UI
+================================ */
 
 function updateUI(){
 
-    position =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                Number(position) || 0
-            )
-        );
+  let displayState =
+    state || "CLOSED";
+
+  displayState =
+    displayState.toUpperCase();
+
+  const safePosition =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Number(position) || 0
+      )
+    );
+
+  sceneState.textContent =
+    displayState;
+
+  bigState.textContent =
+    displayState;
+
+  infoState.textContent =
+    displayState;
+
+  infoNext.textContent =
+    nextDirection;
+
+  positionValue.textContent =
+    Math.round(safePosition) + "%";
+
+  infoPosition.textContent =
+    Math.round(safePosition) + "%";
 
 
-    if(positionText)
-        positionText.textContent =
-            Math.round(
-                position
-            ) + "%";
+  /* Door animation */
+
+  shutter.style.transform =
+    `translateY(${-safePosition}%)`;
 
 
-    if(progressBar)
-        progressBar.style.width =
-            position + "%";
+  /* Moving glow */
+
+  if(
+    displayState === "OPENING" ||
+    displayState === "CLOSING"
+  ){
+
+    gate.classList.add("moving");
+
+  }else{
+
+    gate.classList.remove("moving");
+
+  }
 
 
-    if(shutter){
+  /* Online */
 
-        shutter.style.transform =
-            "translateY(" +
-            (-position) +
-            "%)";
+  if(online){
 
-    }
+    onlineBadge.classList.add("online");
 
+    onlineText.textContent =
+      "ONLINE";
 
-    if(stateBadge)
-        stateBadge.textContent =
-            state;
+    infoConnection.textContent =
+      "ONLINE";
 
+  }else{
 
-    if(infoState)
-        infoState.textContent =
-            formatState(
-                state
-            );
+    onlineBadge.classList.remove("online");
 
+    onlineText.textContent =
+      "OFFLINE";
 
-    if(nextDirectionText)
-        nextDirectionText.textContent =
-            nextDirection;
+    infoConnection.textContent =
+      "OFFLINE";
+
+  }
 
 
-    if(
-        state === "OPENING" ||
-        state === "CLOSING"
-    ){
+  /* Button */
 
-        scene?.classList.add(
-            "moving"
-        );
+  if(displayState === "CLOSED"){
+
+    controlIcon.textContent = "↑";
+    controlText.textContent = "OPEN";
+    controlSub.textContent =
+      "Press to open the door";
+
+  }else if(displayState === "OPENING"){
+
+    controlIcon.textContent = "■";
+    controlText.textContent = "STOP";
+    controlSub.textContent =
+      "Press to stop opening";
+
+  }else if(displayState === "OPEN"){
+
+    controlIcon.textContent = "↓";
+    controlText.textContent = "CLOSE";
+    controlSub.textContent =
+      "Press to close the door";
+
+  }else if(displayState === "CLOSING"){
+
+    controlIcon.textContent = "■";
+    controlText.textContent = "STOP";
+    controlSub.textContent =
+      "Press to stop closing";
+
+  }else if(displayState === "STOPPED"){
+
+    if(nextDirection === "OPEN"){
+
+      controlIcon.textContent = "↑";
+      controlText.textContent = "OPEN";
+      controlSub.textContent =
+        "Press to continue opening";
 
     }else{
 
-        scene?.classList.remove(
-            "moving"
-        );
+      controlIcon.textContent = "↓";
+      controlText.textContent = "CLOSE";
+      controlSub.textContent =
+        "Press to continue closing";
 
     }
 
-
-    if(buttonLabel){
-
-        if(
-            state ===
-            "CLOSED"
-        ){
-
-            buttonLabel.textContent =
-                "OPEN";
-
-        }else if(
-
-            state ===
-            "OPENING" ||
-
-            state ===
-            "CLOSING"
-
-        ){
-
-            buttonLabel.textContent =
-                "STOP";
-
-        }else if(
-
-            state ===
-            "OPEN"
-
-        ){
-
-            buttonLabel.textContent =
-                "CLOSE";
-
-        }else if(
-
-            state ===
-            "STOPPED"
-
-        ){
-
-            buttonLabel.textContent =
-                nextDirection ===
-                "OPEN"
-                ? "OPEN"
-                : "CLOSE";
-
-        }
-
-    }
-
-
-    if(buttonIcon){
-
-        if(
-
-            state ===
-            "OPENING" ||
-
-            state ===
-            "CLOSING"
-
-        ){
-
-            buttonIcon.textContent =
-                "■";
-
-        }else if(
-
-            nextDirection ===
-            "OPEN"
-
-        ){
-
-            buttonIcon.textContent =
-                "↑";
-
-        }else{
-
-            buttonIcon.textContent =
-                "↓";
-
-        }
-
-    }
+  }
 
 }
 
 
-/* =========================================================
-   FORMAT STATE
-   ========================================================= */
-
-function formatState(
-    value
-){
-
-    if(
-        value ===
-        "OPENING"
-    )
-        return "Opening";
-
-
-    if(
-        value ===
-        "CLOSING"
-    )
-        return "Closing";
-
-
-    if(
-        value ===
-        "STOPPED"
-    )
-        return "Stopped";
-
-
-    if(
-        value ===
-        "OPEN"
-    )
-        return "Open";
-
-
-    return "Closed";
-
-}
-
-
-/* =========================================================
-   TOAST
-   ========================================================= */
-
-let toastTimer;
-
-
-function toast(
-    message
-){
-
-    if(!toastElement)
-        return;
-
-
-    toastElement.textContent =
-        message;
-
-
-    toastElement.classList.add(
-        "show"
-    );
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    toastTimer =
-        setTimeout(
-
-            () => {
-
-                toastElement.classList.remove(
-                    "show"
-                );
-
-            },
-
-            2200
-
-        );
-
-}
-
-
-/* =========================================================
-   SEND BLYNK PRESS
-   ========================================================= */
-
-async function sendBlynkPress(){
-
-    try{
-
-        const result =
-            await apiRequest(
-
-                "POST",
-
-                {
-                    action:
-                        "press"
-                }
-
-            );
-
-
-        setOnline(
-            result.deviceOnline !==
-            false
-        );
-
-
-        return true;
-
-
-    }catch(error){
-
-        console.error(
-            error
-        );
-
-
-        setOnline(
-            false
-        );
-
-
-        toast(
-            error.message ||
-            "Controller unavailable"
-        );
-
-
-        return false;
-
-    }
-
-}
-
-
-/* =========================================================
-   MAIN BUTTON
-   ========================================================= */
-
-async function doorButton(
-    event
-){
-
-    if(
-        busy ||
-        !loggedIn
-    )
-        return;
-
-
-    /* Ripple */
-
-    if(doorBtn){
-
-        const rect =
-            doorBtn.getBoundingClientRect();
-
-
-        const ripple =
-            document.createElement(
-                "span"
-            );
-
-
-        ripple.className =
-            "ripple";
-
-
-        ripple.style.left =
-            (
-                event.clientX -
-                rect.left
-            ) + "px";
-
-
-        ripple.style.top =
-            (
-                event.clientY -
-                rect.top
-            ) + "px";
-
-
-        doorBtn.appendChild(
-            ripple
-        );
-
-
-        setTimeout(
-
-            () => {
-                ripple.remove();
-            },
-
-            700
-
-        );
-
-    }
-
-
-    busy =
-        true;
-
-
-    if(doorBtn)
-        doorBtn.disabled =
-            true;
-
-
-    try{
-
-        const oldState =
-            state;
-
-
-        const ok =
-            await sendBlynkPress();
-
-
-        if(!ok)
-            return;
-
-
-        if(
-            oldState ===
-            "CLOSED"
-        ){
-
-            lastCommand.textContent =
-                "Open";
-
-            toast(
-                "Opening command sent"
-            );
-
-
-        }else if(
-
-            oldState ===
-            "OPEN"
-
-        ){
-
-            lastCommand.textContent =
-                "Close";
-
-            toast(
-                "Closing command sent"
-            );
-
-
-        }else if(
-
-            oldState ===
-            "OPENING" ||
-
-            oldState ===
-            "CLOSING"
-
-        ){
-
-            lastCommand.textContent =
-                "Stop";
-
-            toast(
-                "Stop command sent"
-            );
-
-
-        }else if(
-
-            oldState ===
-            "STOPPED"
-
-        ){
-
-            lastCommand.textContent =
-                nextDirection;
-
-            toast(
-
-                nextDirection ===
-                "OPEN"
-
-                ? "Opening command sent"
-
-                : "Closing command sent"
-
-            );
-
-        }
-
-
-        setTimeout(
-            syncFromBlynk,
-            250
-        );
-
-
-    }finally{
-
-        setTimeout(
-
-            () => {
-
-                busy =
-                    false;
-
-
-                if(doorBtn)
-                    doorBtn.disabled =
-                        false;
-
-            },
-
-            500
-
-        );
-
-    }
-
-}
-
-
-/* =========================================================
+/* ================================
    POLLING
-   ========================================================= */
+================================ */
 
 function startPolling(){
 
-    if(pollTimer)
-        clearInterval(
-            pollTimer
-        );
+  stopPolling();
 
-
-    pollTimer =
-        setInterval(
-
-            syncFromBlynk,
-
-            1000
-
-        );
+  pollTimer =
+    setInterval(
+      syncFromBlynk,
+      1000
+    );
 
 }
 
 
-/* =========================================================
-   STARTUP
-   ========================================================= */
+function stopPolling(){
 
-async function startup(){
+  if(pollTimer){
 
-    createLoginScreen();
+    clearInterval(pollTimer);
 
+    pollTimer = null;
 
-    try{
-
-        const result =
-            await apiRequest(
-                "GET"
-            );
-
-
-        loggedIn =
-            true;
-
-
-        const screen =
-            document.getElementById(
-                "loginScreen"
-            );
-
-
-        if(screen)
-            screen.remove();
-
-
-        if(
-            result.deviceOnline !==
-            undefined
-        ){
-
-            setOnline(
-                result.deviceOnline
-            );
-
-        }
-
-
-        state =
-            normalizeState(
-                result.state
-            );
-
-
-        position =
-            Number(
-                result.position ||
-                0
-            );
-
-
-        nextDirection =
-            String(
-                result.nextDirection ||
-                "OPEN"
-            ).toUpperCase();
-
-
-        updateUI();
-
-
-        startPolling();
-
-
-    }catch{
-
-        loggedIn =
-            false;
-
-        setOnline(
-            false
-        );
-
-    }
+  }
 
 }
 
 
-startup();
+/* ================================
+   START
+================================ */
+
+updateUI();
+
+checkSession();
 
 </script>
 
