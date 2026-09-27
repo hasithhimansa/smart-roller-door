@@ -3,20 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Smart Roller Door</title>
 
 <style>
+
+/* =========================================================
+   SMART ROLLER DOOR — UI ONLY
+   JavaScript/API logic remains compatible with existing setup
+========================================================= */
+
 :root{
-  --bg:#070b14;
-  --card:rgba(17,24,39,.72);
-  --border:rgba(255,255,255,.09);
-  --text:#f5f7ff;
-  --muted:#8993a8;
-  --cyan:#35d9ff;
-  --blue:#397cff;
-  --green:#32e59a;
+  --bg:#05070b;
+  --panel:#0b1018;
+  --panel2:#0f1621;
+  --panel3:#121b28;
+
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.13);
+
+  --text:#f5f7fb;
+  --muted:#7f8b9d;
+
+  --blue:#2878ff;
+  --blue2:#1658d7;
+  --cyan:#38d7ff;
+
+  --green:#27e39a;
   --red:#ff5577;
   --yellow:#ffd45a;
+
+  --shadow:0 30px 90px rgba(0,0,0,.45);
 }
 
 *{
@@ -25,136 +42,367 @@
   padding:0;
 }
 
-body{
-  min-height:100vh;
-  font-family:Arial,Helvetica,sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(circle at 20% 0%,rgba(57,124,255,.16),transparent 30%),
-    radial-gradient(circle at 90% 20%,rgba(53,217,255,.08),transparent 30%),
-    var(--bg);
+html{
+  scroll-behavior:smooth;
 }
 
-button,input{
+body{
+  min-height:100vh;
+  color:var(--text);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 15% -10%,
+      rgba(40,120,255,.20),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 100% 10%,
+      rgba(56,215,255,.09),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(40,120,255,.06),
+      transparent 35%
+    ),
+    var(--bg);
+
+  overflow-x:hidden;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+
+  background:
+    linear-gradient(
+      rgba(255,255,255,.015) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.015) 1px,
+      transparent 1px
+    );
+
+  background-size:50px 50px;
+  mask-image:linear-gradient(
+    to bottom,
+    black,
+    transparent 80%
+  );
+
+  z-index:-1;
+}
+
+button,
+input{
   font:inherit;
 }
 
-/* LOGIN */
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 #loginPage{
   min-height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:20px;
+  padding:25px;
 }
 
 .loginCard{
+  position:relative;
   width:min(430px,100%);
-  padding:38px;
-  border:1px solid var(--border);
-  border-radius:28px;
-  background:rgba(13,19,32,.88);
-  box-shadow:0 30px 80px rgba(0,0,0,.55);
-  backdrop-filter:blur(20px);
+  padding:42px 38px;
+
+  border:1px solid var(--line2);
+  border-radius:30px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18,27,40,.94),
+      rgba(7,11,18,.96)
+    );
+
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.65),
+    0 0 80px rgba(40,120,255,.06);
+
+  backdrop-filter:blur(25px);
+  overflow:hidden;
+}
+
+.loginCard::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--blue),
+      var(--cyan),
+      transparent
+    );
+
+  opacity:.9;
+}
+
+.loginCard::after{
+  content:"";
+  position:absolute;
+
+  width:180px;
+  height:180px;
+
+  top:-100px;
+  right:-80px;
+
+  border-radius:50%;
+
+  background:rgba(40,120,255,.12);
+  filter:blur(40px);
+
+  pointer-events:none;
 }
 
 .loginLogo{
-  width:70px;
-  height:70px;
-  margin:0 auto 20px;
-  border-radius:20px;
+  width:76px;
+  height:76px;
+
+  margin:0 auto 22px;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  background:linear-gradient(135deg,#397cff,#35d9ff);
-  font-size:32px;
-  font-weight:900;
-  box-shadow:0 15px 35px rgba(57,124,255,.25);
+
+  border-radius:22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #3987ff,
+      #1856d2
+    );
+
+  border:1px solid rgba(255,255,255,.18);
+
+  font-size:34px;
+
+  box-shadow:
+    0 18px 45px rgba(40,120,255,.28),
+    inset 0 1px rgba(255,255,255,.25);
 }
 
 .loginCard h1{
   text-align:center;
-  font-size:27px;
-  margin-bottom:8px;
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-.7px;
 }
 
 .loginCard p{
   text-align:center;
   color:var(--muted);
-  margin-bottom:28px;
+  font-size:13px;
+  margin-top:8px;
+  margin-bottom:31px;
 }
 
 .inputGroup{
-  margin-bottom:16px;
+  margin-bottom:17px;
 }
 
 .inputGroup label{
   display:block;
-  margin-bottom:7px;
-  font-size:13px;
-  color:#aeb7c9;
+
+  margin-bottom:8px;
+
+  color:#aeb8c8;
+  font-size:12px;
+  font-weight:700;
+
+  letter-spacing:.5px;
 }
 
 .inputGroup input{
   width:100%;
-  height:52px;
-  padding:0 15px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:13px;
-  outline:none;
+  height:54px;
+
+  padding:0 16px;
+
   color:white;
-  background:#0b111d;
+
+  background:
+    rgba(3,7,13,.72);
+
+  border:1px solid var(--line2);
+  border-radius:14px;
+
+  outline:none;
+
+  transition:
+    border-color .2s,
+    box-shadow .2s,
+    background .2s;
+}
+
+.inputGroup input::placeholder{
+  color:#556174;
 }
 
 .inputGroup input:focus{
-  border-color:var(--blue);
+  border-color:rgba(40,120,255,.8);
+
+  background:#080e17;
+
+  box-shadow:
+    0 0 0 4px rgba(40,120,255,.10),
+    0 10px 30px rgba(0,0,0,.2);
 }
 
 .loginButton{
+  position:relative;
+  overflow:hidden;
+
   width:100%;
-  height:54px;
+  height:55px;
+
   margin-top:7px;
+
   border:0;
-  border-radius:14px;
+  border-radius:15px;
+
   color:white;
+
   cursor:pointer;
+
+  font-size:14px;
   font-weight:800;
-  background:linear-gradient(135deg,#397cff,#2868e8);
-  box-shadow:0 12px 30px rgba(57,124,255,.25);
+  letter-spacing:.7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3984ff,
+      #2568e8 50%,
+      #174ebd
+    );
+
+  box-shadow:
+    0 16px 35px rgba(40,120,255,.27),
+    inset 0 1px rgba(255,255,255,.25);
+
+  transition:
+    transform .18s,
+    box-shadow .18s,
+    filter .18s;
+}
+
+.loginButton::after{
+  content:"";
+
+  position:absolute;
+  top:0;
+  left:-100%;
+
+  width:70%;
+  height:100%;
+
+  transform:skewX(-20deg);
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.15),
+      transparent
+    );
+
+  transition:left .55s;
 }
 
 .loginButton:hover{
   filter:brightness(1.08);
+
+  box-shadow:
+    0 20px 45px rgba(40,120,255,.37),
+    inset 0 1px rgba(255,255,255,.3);
+}
+
+.loginButton:hover::after{
+  left:130%;
+}
+
+.loginButton:active{
+  transform:scale(.985);
+}
+
+.loginButton:disabled{
+  opacity:.6;
+  cursor:not-allowed;
 }
 
 .loginError{
   min-height:20px;
-  margin-top:14px;
+
+  margin-top:15px;
+
   text-align:center;
+
   color:var(--red);
-  font-size:14px;
+  font-size:13px;
 }
 
-/* APP */
+
+/* =========================================================
+   APPLICATION
+========================================================= */
 
 #app{
   display:none;
   min-height:100vh;
-  padding:25px;
+  padding:24px 20px 35px;
 }
 
 .container{
-  width:min(1400px,94%);
+  width:min(1450px,100%);
   margin:auto;
 }
 
+
+/* =========================================================
+   HEADER
+========================================================= */
+
 .header{
+  min-height:70px;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
+
   gap:20px;
-  margin-bottom:28px;
+
+  margin-bottom:24px;
 }
 
 .brand{
@@ -164,220 +412,507 @@ button,input{
 }
 
 .brandIcon{
-  width:50px;
-  height:50px;
-  border-radius:15px;
+  position:relative;
+
+  width:51px;
+  height:51px;
+
+  flex-shrink:0;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  background:linear-gradient(135deg,#397cff,#35d9ff);
+
+  border-radius:16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #3b86ff,
+      #1854cf
+    );
+
+  border:1px solid rgba(255,255,255,.16);
+
   font-size:22px;
-  font-weight:900;
+
+  box-shadow:
+    0 12px 30px rgba(40,120,255,.25),
+    inset 0 1px rgba(255,255,255,.22);
 }
 
 .brand h1{
-  font-size:22px;
+  font-size:21px;
+  font-weight:800;
+  letter-spacing:-.4px;
 }
 
 .brand span{
+  display:block;
+
+  margin-top:4px;
+
   color:var(--muted);
-  font-size:13px;
+  font-size:12px;
 }
 
 .headerRight{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
 }
 
 .onlineBadge{
   display:flex;
   align-items:center;
-  gap:8px;
-  padding:10px 15px;
-  border:1px solid var(--border);
+  gap:9px;
+
+  min-height:40px;
+
+  padding:0 14px;
+
+  border:1px solid var(--line2);
   border-radius:999px;
-  background:rgba(255,255,255,.04);
-  font-size:13px;
-  font-weight:700;
+
+  background:
+    rgba(255,255,255,.025);
+
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.6px;
+
+  transition:
+    border-color .25s,
+    background .25s;
 }
 
 .statusDot{
-  width:9px;
-  height:9px;
+  width:8px;
+  height:8px;
+
   border-radius:50%;
+
   background:var(--red);
-  box-shadow:0 0 12px rgba(255,85,119,.7);
+
+  box-shadow:
+    0 0 12px rgba(255,85,119,.75);
+}
+
+.onlineBadge.online{
+  border-color:rgba(39,227,154,.2);
+  background:rgba(39,227,154,.035);
 }
 
 .onlineBadge.online .statusDot{
   background:var(--green);
-  box-shadow:0 0 12px rgba(50,229,154,.7);
+
+  box-shadow:
+    0 0 13px rgba(39,227,154,.8);
 }
 
 .logoutButton{
-  border:1px solid var(--border);
-  background:rgba(255,255,255,.04);
-  color:#ccd3df;
-  padding:10px 15px;
-  border-radius:10px;
+  min-height:40px;
+
+  padding:0 15px;
+
+  border:1px solid var(--line2);
+  border-radius:11px;
+
+  color:#c6cfdb;
+
+  background:
+    rgba(255,255,255,.025);
+
   cursor:pointer;
+
+  font-size:12px;
+  font-weight:700;
+
+  transition:
+    background .2s,
+    border-color .2s,
+    color .2s;
 }
 
+.logoutButton:hover{
+  color:white;
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.18);
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
 .hero{
-  padding:30px;
-  margin-bottom:22px;
-  border:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+
+  padding:30px 32px;
+
+  margin-bottom:20px;
+
+  border:1px solid var(--line);
   border-radius:24px;
-  background:linear-gradient(
-    135deg,
-    rgba(57,124,255,.11),
-    rgba(255,255,255,.025)
-  );
+
+  background:
+    linear-gradient(
+      120deg,
+      rgba(20,34,57,.72),
+      rgba(10,16,26,.72)
+    );
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.2);
+}
+
+.hero::before{
+  content:"";
+
+  position:absolute;
+
+  width:300px;
+  height:300px;
+
+  right:-100px;
+  top:-180px;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(40,120,255,.18),
+      transparent 68%
+    );
+}
+
+.hero::after{
+  content:"";
+
+  position:absolute;
+
+  left:32px;
+  bottom:0;
+
+  width:80px;
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--blue),
+      transparent
+    );
 }
 
 .hero small{
+  position:relative;
+  z-index:1;
+
   color:var(--cyan);
+
+  font-size:10px;
   font-weight:800;
-  letter-spacing:2px;
+
+  letter-spacing:2.4px;
 }
 
 .hero h2{
-  margin-top:10px;
+  position:relative;
+  z-index:1;
+
+  margin-top:8px;
+
   font-size:38px;
+  line-height:1.1;
+
+  letter-spacing:-1.5px;
 }
 
 .hero p{
+  position:relative;
+  z-index:1;
+
   margin-top:9px;
+
   color:var(--muted);
+
+  font-size:13px;
 }
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 .dashboard{
   display:grid;
-  grid-template-columns:1.5fr .8fr;
-  gap:22px;
+
+  grid-template-columns:
+    minmax(0,1.55fr)
+    minmax(340px,.72fr);
+
+  gap:20px;
+
+  align-items:stretch;
 }
 
 .card{
-  border:1px solid var(--border);
-  border-radius:25px;
-  background:var(--card);
-  box-shadow:0 25px 70px rgba(0,0,0,.35);
+  border:1px solid var(--line);
+
+  border-radius:24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16,24,36,.82),
+      rgba(8,13,21,.88)
+    );
+
+  box-shadow:var(--shadow);
+
   backdrop-filter:blur(18px);
 }
 
+
+/* =========================================================
+   SCENE CARD
+========================================================= */
+
 .sceneCard{
-  padding:20px;
+  padding:19px;
 }
 
 .cardHeader{
+  min-height:38px;
+
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  margin-bottom:15px;
+  justify-content:space-between;
+
+  gap:15px;
+
+  margin-bottom:13px;
+
+  padding:0 3px;
 }
 
 .cardHeader h3{
-  font-size:17px;
+  font-size:13px;
+  font-weight:750;
+  color:#dfe5ee;
 }
 
 .stateText{
+  display:flex;
+  align-items:center;
+  gap:7px;
+
   color:var(--cyan);
-  font-size:13px;
-  font-weight:800;
+
+  font-size:10px;
+  font-weight:900;
+
+  letter-spacing:1.2px;
 }
 
-/* PURE ROLLER DOOR SCENE */
+.stateText::before{
+  content:"";
+
+  width:6px;
+  height:6px;
+
+  border-radius:50%;
+
+  background:currentColor;
+
+  box-shadow:
+    0 0 10px currentColor;
+}
+
+
+/* =========================================================
+   ROLLER DOOR SCENE
+========================================================= */
 
 .scene{
   position:relative;
+
   width:100%;
-  height:580px;
+  height:600px;
+
   overflow:hidden;
-  border-radius:19px;
+
+  border-radius:18px;
+
   background:
-    radial-gradient(circle at 50% 40%,rgba(80,100,130,.10),transparent 55%),
-    #05080d;
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(60,90,125,.10),
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(40,120,255,.06),
+      transparent 42%
+    ),
+    #03060a;
+
+  border:1px solid rgba(255,255,255,.05);
+}
+
+.scene::before{
+  content:"";
+
+  position:absolute;
+  inset:0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.025),
+      transparent 18%,
+      transparent 82%,
+      rgba(255,255,255,.025)
+    );
+
+  pointer-events:none;
 }
 
 .gate{
   position:absolute;
-  left:6%;
-  right:6%;
-  top:5%;
-  bottom:5%;
-  border:10px solid #68717b;
+
+  left:5%;
+  right:5%;
+  top:4%;
+  bottom:4%;
+
+  border:10px solid #606b76;
+
   border-radius:18px;
-  background:#11161e;
+
+  background:#0d131b;
+
   overflow:hidden;
+
   box-shadow:
-    0 0 0 2px rgba(255,255,255,.04),
-    0 30px 80px rgba(0,0,0,.65),
-    inset 0 0 45px rgba(0,0,0,.45);
+    0 0 0 1px rgba(255,255,255,.06),
+    0 35px 80px rgba(0,0,0,.68),
+    inset 0 0 55px rgba(0,0,0,.55);
+
+  transition:
+    box-shadow .3s;
+}
+
+.gate.moving{
+  box-shadow:
+    0 0 0 1px rgba(56,215,255,.12),
+    0 35px 90px rgba(0,0,0,.68),
+    0 0 45px rgba(40,120,255,.08),
+    inset 0 0 55px rgba(0,0,0,.55);
 }
 
 .doorOpening{
   position:absolute;
   inset:0;
+
   background:
     radial-gradient(
       ellipse at center,
-      rgba(58,78,105,.24),
-      rgba(2,5,9,.95) 75%
+      rgba(53,91,130,.24),
+      rgba(2,5,9,.97) 73%
     );
 }
 
 .shutter{
   position:absolute;
+
   z-index:5;
+
   left:0;
   right:0;
   top:0;
+
   height:100%;
+
   transform:translateY(0%);
-  transition:transform .12s linear;
-  background:#8b9299;
+
+  transition:
+    transform .12s linear;
+
+  background:#8c949b;
+
   box-shadow:
-    inset 0 0 25px rgba(0,0,0,.35),
-    0 10px 25px rgba(0,0,0,.25);
+    inset 0 0 30px rgba(0,0,0,.4),
+    0 12px 28px rgba(0,0,0,.25);
 }
 
 .slat{
   height:4.54545%;
-  border-bottom:2px solid #59616a;
-  border-top:1px solid rgba(255,255,255,.18);
+
+  border-top:
+    1px solid rgba(255,255,255,.20);
+
+  border-bottom:
+    2px solid #555f69;
+
   background:
     linear-gradient(
       to bottom,
-      #aeb4b9 0%,
-      #858c92 45%,
-      #70777e 100%
+      #b3b9be 0%,
+      #92999f 38%,
+      #7b838a 55%,
+      #6c747c 100%
     );
+
   box-shadow:
     inset 0 1px rgba(255,255,255,.12),
-    inset 0 -2px rgba(0,0,0,.16);
+    inset 0 -2px rgba(0,0,0,.18);
 }
 
 .gateTop{
   position:absolute;
+
   z-index:10;
+
   top:-2px;
   left:-2px;
   right:-2px;
-  height:17px;
+
+  height:18px;
+
   border-radius:8px;
-  background:linear-gradient(#9aa2aa,#626a72);
-  box-shadow:0 4px 10px rgba(0,0,0,.4);
+
+  background:
+    linear-gradient(
+      #9da5ad,
+      #5c6670
+    );
+
+  box-shadow:
+    0 5px 12px rgba(0,0,0,.45);
 }
 
 .gateLeft,
 .gateRight{
   position:absolute;
+
   z-index:11;
+
   top:0;
   bottom:0;
-  width:11px;
-  background:linear-gradient(90deg,#9ca4ab,#555e67);
+
+  width:12px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #9ca5ad,
+      #68727c,
+      #505963
+    );
 }
 
 .gateLeft{
@@ -390,166 +925,410 @@ button,input{
 
 .doorGlow{
   position:absolute;
+
   z-index:2;
+
   inset:10%;
+
   border-radius:50%;
-  background:rgba(53,217,255,.08);
-  filter:blur(55px);
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(56,215,255,.15),
+      transparent 65%
+    );
+
+  filter:blur(50px);
+
   opacity:0;
-  transition:.3s;
+
+  transition:opacity .3s;
 }
 
 .gate.moving .doorGlow{
   opacity:1;
-  animation:pulseGlow 1s infinite alternate;
+
+  animation:
+    pulseGlow 1s ease-in-out infinite alternate;
 }
 
 @keyframes pulseGlow{
+
   from{
-    opacity:.25;
-    transform:scale(.96);
+    opacity:.20;
+    transform:scale(.94);
   }
+
   to{
-    opacity:.7;
-    transform:scale(1.04);
+    opacity:.65;
+    transform:scale(1.05);
   }
+
 }
 
 .gateLabel{
   position:absolute;
+
   z-index:20;
+
   left:50%;
-  bottom:22px;
+  bottom:21px;
+
   transform:translateX(-50%);
-  padding:8px 15px;
+
+  padding:8px 14px;
+
+  border:
+    1px solid rgba(255,255,255,.12);
+
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.13);
-  background:rgba(5,8,13,.65);
-  color:#b9c3d2;
-  font-size:11px;
+
+  background:
+    rgba(3,7,12,.72);
+
+  color:#9ca9ba;
+
+  font-size:9px;
+  font-weight:800;
+
   letter-spacing:2px;
+
   white-space:nowrap;
+
+  backdrop-filter:blur(10px);
 }
 
-/* CONTROL */
+
+/* =========================================================
+   CONTROL CARD
+========================================================= */
 
 .controlCard{
-  padding:24px;
+  padding:26px;
+
+  display:flex;
+  flex-direction:column;
 }
 
 .controlTitle{
-  font-size:13px;
-  color:var(--muted);
+  color:#6f7c8e;
+
+  font-size:10px;
+  font-weight:800;
+
+  letter-spacing:1.8px;
   text-transform:uppercase;
-  letter-spacing:1.5px;
-  margin-bottom:10px;
 }
 
 .bigState{
-  font-size:31px;
+  margin-top:9px;
+
+  font-size:32px;
   font-weight:900;
-  margin-bottom:7px;
+
+  line-height:1;
+
+  letter-spacing:-1px;
 }
 
 .positionText{
+  margin-top:9px;
+  margin-bottom:27px;
+
   color:var(--muted);
-  margin-bottom:25px;
+
+  font-size:12px;
 }
+
+.positionText strong{
+  color:#cbd4df;
+}
+
+
+/* =========================================================
+   MAIN BLUE BUTTON
+========================================================= */
 
 .controlButton{
   position:relative;
   overflow:hidden;
+
   width:100%;
-  min-height:170px;
+  min-height:178px;
+
   border:0;
-  border-radius:25px;
+  border-radius:24px;
+
+  color:white;
+
   cursor:pointer;
-  color:#fff;
+
   background:
     linear-gradient(
-      135deg,
-      #397cff 0%,
-      #2868e8 45%,
-      #1c54c9 100%
+      140deg,
+      #3d87ff 0%,
+      #286be8 42%,
+      #1a53c7 100%
     );
+
   box-shadow:
-    0 15px 35px rgba(57,124,255,.28),
-    inset 0 1px rgba(255,255,255,.22);
+    0 20px 45px rgba(40,120,255,.28),
+    inset 0 1px rgba(255,255,255,.24),
+    inset 0 -1px rgba(0,0,0,.15);
+
   transition:
     transform .18s,
-    box-shadow .18s;
+    box-shadow .18s,
+    filter .18s;
+}
+
+.controlButton::before{
+  content:"";
+
+  position:absolute;
+
+  width:240px;
+  height:240px;
+
+  top:-150px;
+  right:-100px;
+
+  border-radius:50%;
+
+  background:
+    rgba(255,255,255,.08);
+
+  filter:blur(4px);
+}
+
+.controlButton::after{
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  left:-120%;
+
+  width:70%;
+  height:100%;
+
+  transform:skewX(-20deg);
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.13),
+      transparent
+    );
+
+  transition:left .65s;
 }
 
 .controlButton:hover{
+  filter:brightness(1.07);
+
   box-shadow:
-    0 20px 45px rgba(57,124,255,.42),
-    inset 0 1px rgba(255,255,255,.25);
+    0 24px 55px rgba(40,120,255,.40),
+    inset 0 1px rgba(255,255,255,.28),
+    inset 0 -1px rgba(0,0,0,.15);
+}
+
+.controlButton:hover::after{
+  left:140%;
 }
 
 .controlButton:active{
   transform:scale(.975);
+
+  box-shadow:
+    0 10px 25px rgba(40,120,255,.25),
+    inset 0 2px 5px rgba(0,0,0,.18);
+}
+
+.controlButton:disabled{
+  cursor:not-allowed;
+  opacity:.72;
 }
 
 .controlIcon{
-  font-size:43px;
+  position:relative;
+  z-index:2;
+
   display:block;
-  margin-bottom:8px;
+
+  margin-bottom:9px;
+
+  font-size:39px;
+  line-height:1;
+
+  font-weight:500;
 }
 
 .controlText{
-  font-size:24px;
+  position:relative;
+  z-index:2;
+
+  display:block;
+
+  font-size:25px;
   font-weight:900;
+
+  letter-spacing:.2px;
 }
 
 .controlSub{
+  position:relative;
+  z-index:2;
+
   display:block;
-  margin-top:7px;
-  opacity:.75;
-  font-size:12px;
+
+  margin-top:8px;
+
+  font-size:11px;
+
+  color:rgba(255,255,255,.72);
 }
+
+
+/* =========================================================
+   INFO GRID
+========================================================= */
 
 .infoGrid{
   display:grid;
+
   grid-template-columns:1fr 1fr;
+
   gap:10px;
+
   margin-top:20px;
 }
 
 .infoBox{
-  padding:15px;
-  border:1px solid var(--border);
+  min-height:76px;
+
+  padding:14px;
+
+  border:1px solid var(--line);
+
   border-radius:15px;
-  background:rgba(255,255,255,.025);
+
+  background:
+    rgba(255,255,255,.025);
+
+  transition:
+    background .2s,
+    border-color .2s,
+    transform .2s;
+}
+
+.infoBox:hover{
+  transform:translateY(-2px);
+
+  border-color:rgba(255,255,255,.12);
+
+  background:
+    rgba(255,255,255,.045);
 }
 
 .infoBox span{
   display:block;
-  color:var(--muted);
-  font-size:11px;
-  margin-bottom:6px;
+
+  margin-bottom:8px;
+
+  color:#697689;
+
+  font-size:9px;
+  font-weight:800;
+
+  letter-spacing:1.3px;
+
   text-transform:uppercase;
 }
 
 .infoBox strong{
-  font-size:15px;
+  display:block;
+
+  color:#dfe5ee;
+
+  font-size:14px;
+  font-weight:800;
 }
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
 
 .footer{
+  padding:22px 0 5px;
+
   text-align:center;
-  color:#596376;
-  font-size:12px;
-  margin:25px 0;
+
+  color:#4e5a6b;
+
+  font-size:10px;
+
+  letter-spacing:.4px;
 }
 
-@media(max-width:950px){
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media(max-width:1100px){
+
   .dashboard{
     grid-template-columns:1fr;
   }
+
+  .controlCard{
+    display:grid;
+
+    grid-template-columns:
+      1fr 1fr;
+
+    column-gap:20px;
+  }
+
+  .controlTitle{
+    grid-column:1;
+  }
+
+  .bigState{
+    grid-column:1;
+  }
+
+  .positionText{
+    grid-column:1;
+    margin-bottom:0;
+  }
+
+  .controlButton{
+    grid-column:2;
+    grid-row:1 / span 4;
+
+    min-height:210px;
+  }
+
+  .infoGrid{
+    grid-column:1 / -1;
+  }
+
 }
 
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+========================================================= */
+
 @media(max-width:650px){
+
   #app{
-    padding:14px;
+    padding:15px 12px 25px;
   }
 
   .container{
@@ -558,62 +1337,260 @@ button,input{
 
   .header{
     align-items:flex-start;
+    margin-bottom:18px;
+  }
+
+  .brand{
+    gap:10px;
+  }
+
+  .brandIcon{
+    width:45px;
+    height:45px;
+
+    border-radius:13px;
+
+    font-size:19px;
   }
 
   .brand h1{
-    font-size:18px;
+    font-size:17px;
+  }
+
+  .brand span{
+    font-size:10px;
+  }
+
+  .headerRight{
+    gap:6px;
   }
 
   .onlineBadge{
-    font-size:11px;
-    padding:8px 10px;
+    min-height:34px;
+    padding:0 9px;
+
+    font-size:9px;
+  }
+
+  .statusDot{
+    width:6px;
+    height:6px;
   }
 
   .logoutButton{
-    padding:8px 10px;
-    font-size:12px;
+    min-height:34px;
+    padding:0 9px;
+
+    font-size:10px;
   }
 
   .hero{
-    padding:22px;
+    padding:23px 21px;
+    margin-bottom:15px;
+
+    border-radius:20px;
+  }
+
+  .hero::after{
+    left:21px;
   }
 
   .hero h2{
-    font-size:28px;
+    font-size:29px;
+  }
+
+  .hero p{
+    font-size:11px;
+  }
+
+  .sceneCard{
+    padding:12px;
+  }
+
+  .cardHeader{
+    min-height:34px;
+    margin-bottom:9px;
+  }
+
+  .cardHeader h3{
+    font-size:12px;
+  }
+
+  .stateText{
+    font-size:9px;
   }
 
   .scene{
-    height:420px;
+    height:430px;
+    border-radius:15px;
   }
 
   .gate{
     left:4%;
     right:4%;
+
+    border-width:8px;
+    border-radius:15px;
+  }
+
+  .gateLeft,
+  .gateRight{
+    width:9px;
+  }
+
+  .gateTop{
+    height:14px;
+  }
+
+  .gateLabel{
+    bottom:15px;
+    padding:7px 11px;
+
+    font-size:8px;
+    letter-spacing:1.5px;
+  }
+
+  .controlCard{
+    display:block;
+    padding:20px;
+  }
+
+  .controlTitle{
+    font-size:9px;
+  }
+
+  .bigState{
+    margin-top:8px;
+    font-size:27px;
+  }
+
+  .positionText{
+    margin-top:8px;
+    margin-bottom:21px;
   }
 
   .controlButton{
-    min-height:145px;
+    min-height:150px;
+    border-radius:21px;
   }
+
+  .controlIcon{
+    font-size:35px;
+  }
+
+  .controlText{
+    font-size:22px;
+  }
+
+  .controlSub{
+    font-size:10px;
+  }
+
+  .infoGrid{
+    margin-top:15px;
+    gap:8px;
+  }
+
+  .infoBox{
+    min-height:68px;
+    padding:12px;
+    border-radius:13px;
+  }
+
+  .infoBox span{
+    margin-bottom:6px;
+    font-size:8px;
+  }
+
+  .infoBox strong{
+    font-size:12px;
+  }
+
 }
+
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media(max-width:390px){
+
+  .header{
+    flex-wrap:wrap;
+  }
+
+  .headerRight{
+    width:100%;
+    justify-content:flex-end;
+  }
+
+  .hero h2{
+    font-size:27px;
+  }
+
+  .scene{
+    height:390px;
+  }
+
+  .controlButton{
+    min-height:140px;
+  }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media(prefers-reduced-motion:reduce){
+
+  *,
+  *::before,
+  *::after{
+    scroll-behavior:auto !important;
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+
+<!-- ========================================================
+     LOGIN
+========================================================= -->
 
 <section id="loginPage">
+
   <div class="loginCard">
 
-    <div class="loginLogo">🚪</div>
+    <div class="loginLogo">
+      🚪
+    </div>
 
-    <h1>Smart Roller Door</h1>
-    <p>Secure Remote Control System</p>
+    <h1>
+      Smart Roller Door
+    </h1>
+
+    <p>
+      Secure Remote Control System
+    </p>
+
 
     <form id="loginForm">
 
       <div class="inputGroup">
-        <label>Username</label>
+
+        <label>
+          USERNAME
+        </label>
+
         <input
           id="username"
           type="text"
@@ -621,10 +1598,16 @@ button,input{
           placeholder="Enter username"
           required
         >
+
       </div>
 
+
       <div class="inputGroup">
-        <label>Password</label>
+
+        <label>
+          PASSWORD
+        </label>
+
         <input
           id="password"
           type="password"
@@ -632,45 +1615,85 @@ button,input{
           placeholder="Enter password"
           required
         >
+
       </div>
 
-      <button class="loginButton" type="submit">
+
+      <button
+        class="loginButton"
+        type="submit"
+      >
         LOGIN
       </button>
 
-      <div id="loginError" class="loginError"></div>
+
+      <div
+        id="loginError"
+        class="loginError"
+      ></div>
 
     </form>
 
   </div>
+
 </section>
 
 
-<!-- MAIN APP -->
+
+<!-- ========================================================
+     MAIN APPLICATION
+========================================================= -->
 
 <section id="app">
 
 <div class="container">
 
+
+  <!-- HEADER -->
+
   <header class="header">
 
     <div class="brand">
-      <div class="brandIcon">🚪</div>
+
+      <div class="brandIcon">
+        🚪
+      </div>
 
       <div>
-        <h1>Smart Roller Door</h1>
-        <span>Remote Roller Door System</span>
+
+        <h1>
+          Smart Roller Door
+        </h1>
+
+        <span>
+          Remote Roller Door System
+        </span>
+
       </div>
+
     </div>
+
 
     <div class="headerRight">
 
-      <div id="onlineBadge" class="onlineBadge">
+      <div
+        id="onlineBadge"
+        class="onlineBadge"
+      >
+
         <span class="statusDot"></span>
-        <span id="onlineText">OFFLINE</span>
+
+        <span id="onlineText">
+          OFFLINE
+        </span>
+
       </div>
 
-      <button id="logoutButton" class="logoutButton">
+
+      <button
+        id="logoutButton"
+        class="logoutButton"
+      >
         Logout
       </button>
 
@@ -679,11 +1702,18 @@ button,input{
   </header>
 
 
+
+  <!-- HERO -->
+
   <section class="hero">
 
-    <small>REMOTE CONTROL SYSTEM</small>
+    <small>
+      REMOTE CONTROL SYSTEM
+    </small>
 
-    <h2>Roller Door</h2>
+    <h2>
+      Roller Door
+    </h2>
 
     <p>
       Smart one-button control from anywhere.
@@ -692,29 +1722,51 @@ button,input{
   </section>
 
 
+
+  <!-- DASHBOARD -->
+
   <main class="dashboard">
 
-    <!-- SCENE -->
+
+    <!-- ====================================================
+         DOOR VISUALIZATION
+    ===================================================== -->
 
     <section class="card sceneCard">
 
       <div class="cardHeader">
 
-        <h3>Door Visualization</h3>
+        <h3>
+          Door Visualization
+        </h3>
 
-        <span id="sceneState" class="stateText">
+        <span
+          id="sceneState"
+          class="stateText"
+        >
           CLOSED
         </span>
 
       </div>
 
-      <div id="scene" class="scene">
 
-        <div id="gate" class="gate">
+      <div
+        id="scene"
+        class="scene"
+      >
+
+        <div
+          id="gate"
+          class="gate"
+        >
 
           <div class="doorOpening"></div>
 
-          <div id="shutter" class="shutter">
+
+          <div
+            id="shutter"
+            class="shutter"
+          >
 
             <div class="slat"></div>
             <div class="slat"></div>
@@ -741,11 +1793,15 @@ button,input{
 
           </div>
 
+
           <div class="gateTop"></div>
+
           <div class="gateLeft"></div>
+
           <div class="gateRight"></div>
 
           <div class="doorGlow"></div>
+
 
           <div class="gateLabel">
             SMART ROLLER GATE
@@ -758,7 +1814,10 @@ button,input{
     </section>
 
 
-    <!-- CONTROL -->
+
+    <!-- ====================================================
+         CONTROL
+    ===================================================== -->
 
     <section class="card controlCard">
 
@@ -766,27 +1825,51 @@ button,input{
         Current Door State
       </div>
 
-      <div id="bigState" class="bigState">
+
+      <div
+        id="bigState"
+        class="bigState"
+      >
         CLOSED
       </div>
 
+
       <div class="positionText">
+
         Position:
-        <strong id="positionValue">0%</strong>
+
+        <strong id="positionValue">
+          0%
+        </strong>
+
       </div>
 
 
-      <button id="controlButton" class="controlButton">
+      <button
+        id="controlButton"
+        class="controlButton"
+      >
 
-        <span id="controlIcon" class="controlIcon">
+        <span
+          id="controlIcon"
+          class="controlIcon"
+        >
           ↑
         </span>
 
-        <span id="controlText" class="controlText">
+
+        <span
+          id="controlText"
+          class="controlText"
+        >
           OPEN
         </span>
 
-        <span id="controlSub" class="controlSub">
+
+        <span
+          id="controlSub"
+          class="controlSub"
+        >
           Press to open the door
         </span>
 
@@ -795,25 +1878,58 @@ button,input{
 
       <div class="infoGrid">
 
-        <div class="infoBox">
-          <span>Door State</span>
-          <strong id="infoState">CLOSED</strong>
-        </div>
 
         <div class="infoBox">
-          <span>Next Direction</span>
-          <strong id="infoNext">OPEN</strong>
+
+          <span>
+            Door State
+          </span>
+
+          <strong id="infoState">
+            CLOSED
+          </strong>
+
         </div>
 
-        <div class="infoBox">
-          <span>Position</span>
-          <strong id="infoPosition">0%</strong>
-        </div>
 
         <div class="infoBox">
-          <span>Connection</span>
-          <strong id="infoConnection">OFFLINE</strong>
+
+          <span>
+            Next Direction
+          </span>
+
+          <strong id="infoNext">
+            OPEN
+          </strong>
+
         </div>
+
+
+        <div class="infoBox">
+
+          <span>
+            Position
+          </span>
+
+          <strong id="infoPosition">
+            0%
+          </strong>
+
+        </div>
+
+
+        <div class="infoBox">
+
+          <span>
+            Connection
+          </span>
+
+          <strong id="infoConnection">
+            OFFLINE
+          </strong>
+
+        </div>
+
 
       </div>
 
@@ -831,7 +1947,14 @@ button,input{
 </section>
 
 
+
 <script>
+
+/* =========================================================
+   IMPORTANT
+   API / BACKEND / LOGIN / BLYNK LOGIC PRESERVED
+========================================================= */
+
 
 /* ================================
    CONFIGURATION
@@ -940,19 +2063,28 @@ async function apiRequest(
       url,
       {
         credentials:"include",
+
         ...options,
+
         headers:{
           "Content-Type":"application/json",
+
           ...(options.headers || {})
         }
       }
     );
 
+
   let data = {};
 
+
   try{
-    data = await response.json();
+
+    data =
+      await response.json();
+
   }catch(e){}
+
 
   if(!response.ok){
 
@@ -961,9 +2093,12 @@ async function apiRequest(
       "Request failed";
 
     throw new Error(message);
+
   }
 
+
   return data;
+
 }
 
 
@@ -979,23 +2114,33 @@ loginForm.addEventListener(
 
     loginError.textContent = "";
 
+
     const username =
       usernameInput.value.trim();
 
     const password =
       passwordInput.value;
 
+
     if(!username || !password){
+
       loginError.textContent =
         "Enter username and password.";
+
       return;
+
     }
+
 
     const button =
       loginForm.querySelector("button");
 
+
     button.disabled = true;
-    button.textContent = "LOGIN...";
+
+    button.textContent =
+      "LOGIN...";
+
 
     try{
 
@@ -1003,6 +2148,7 @@ loginForm.addEventListener(
         API_URL + "?action=login",
         {
           method:"POST",
+
           body:JSON.stringify({
             username,
             password
@@ -1010,23 +2156,32 @@ loginForm.addEventListener(
         }
       );
 
+
       passwordInput.value = "";
+
 
       showApp();
 
+
       await syncFromBlynk();
 
+
       startPolling();
+
 
     }catch(error){
 
       loginError.textContent =
-        error.message || "Login failed.";
+        error.message ||
+        "Login failed.";
+
 
     }finally{
 
       button.disabled = false;
-      button.textContent = "LOGIN";
+
+      button.textContent =
+        "LOGIN";
 
     }
 
@@ -1040,8 +2195,11 @@ loginForm.addEventListener(
 
 function showApp(){
 
-  loginPage.style.display = "none";
-  app.style.display = "block";
+  loginPage.style.display =
+    "none";
+
+  app.style.display =
+    "block";
 
 }
 
@@ -1052,8 +2210,12 @@ function showApp(){
 
 function showLogin(){
 
-  app.style.display = "none";
-  loginPage.style.display = "flex";
+  app.style.display =
+    "none";
+
+  loginPage.style.display =
+    "flex";
+
 
   stopPolling();
 
@@ -1073,6 +2235,7 @@ async function checkSession(){
         API_URL + "?action=session"
       );
 
+
     if(result.authenticated){
 
       showApp();
@@ -1086,6 +2249,7 @@ async function checkSession(){
       showLogin();
 
     }
+
 
   }catch(error){
 
@@ -1115,6 +2279,7 @@ logoutButton.addEventListener(
 
     }catch(error){}
 
+
     showLogin();
 
   }
@@ -1134,37 +2299,55 @@ async function syncFromBlynk(){
         API_URL + "?action=status"
       );
 
+
     if(data){
 
       if(
         data.state !== undefined &&
         data.state !== null
       ){
+
         state =
-          String(data.state).toUpperCase();
+          String(
+            data.state
+          ).toUpperCase();
+
       }
+
 
       if(
         data.position !== undefined &&
         data.position !== null
       ){
+
         position =
-          Number(data.position);
+          Number(
+            data.position
+          );
+
       }
+
 
       if(
         data.nextDirection !== undefined &&
         data.nextDirection !== null
       ){
+
         nextDirection =
-          String(data.nextDirection).toUpperCase();
+          String(
+            data.nextDirection
+          ).toUpperCase();
+
       }
 
+
       online = true;
+
 
       updateUI();
 
     }
+
 
   }catch(error){
 
@@ -1185,21 +2368,30 @@ async function sendDoorCommand(){
 
   if(busy) return;
 
+
   if(!online){
 
     await syncFromBlynk();
 
+
     if(!online){
+
       return;
+
     }
 
   }
 
+
   busy = true;
+
 
   controlButton.disabled = true;
 
-  const oldState = state;
+
+  const oldState =
+    state;
+
 
   try{
 
@@ -1211,53 +2403,61 @@ async function sendDoorCommand(){
     );
 
 
-    /*
-      Immediate UI feedback
-      while Blynk/ESP32 updates.
-    */
-
     if(oldState === "CLOSED"){
 
       state = "OPENING";
+
       nextDirection = "CLOSE";
+
 
     }else if(oldState === "OPENING"){
 
       state = "STOPPED";
+
       nextDirection = "CLOSE";
+
 
     }else if(oldState === "OPEN"){
 
       state = "CLOSING";
+
       nextDirection = "OPEN";
+
 
     }else if(oldState === "CLOSING"){
 
       state = "STOPPED";
+
       nextDirection = "OPEN";
+
 
     }else if(oldState === "STOPPED"){
 
       if(nextDirection === "OPEN"){
 
         state = "OPENING";
+
         nextDirection = "CLOSE";
 
       }else{
 
         state = "CLOSING";
+
         nextDirection = "OPEN";
 
       }
 
     }
 
+
     updateUI();
+
 
     setTimeout(
       syncFromBlynk,
       350
     );
+
 
   }catch(error){
 
@@ -1266,12 +2466,17 @@ async function sendDoorCommand(){
       "Door command failed."
     );
 
+
   }finally{
 
     setTimeout(
       function(){
+
         busy = false;
-        controlButton.disabled = false;
+
+        controlButton.disabled =
+          false;
+
       },
       700
     );
@@ -1300,8 +2505,10 @@ function updateUI(){
   let displayState =
     state || "CLOSED";
 
+
   displayState =
     displayState.toUpperCase();
+
 
   const safePosition =
     Math.max(
@@ -1312,23 +2519,33 @@ function updateUI(){
       )
     );
 
+
   sceneState.textContent =
     displayState;
+
 
   bigState.textContent =
     displayState;
 
+
   infoState.textContent =
     displayState;
+
 
   infoNext.textContent =
     nextDirection;
 
+
   positionValue.textContent =
-    Math.round(safePosition) + "%";
+    Math.round(
+      safePosition
+    ) + "%";
+
 
   infoPosition.textContent =
-    Math.round(safePosition) + "%";
+    Math.round(
+      safePosition
+    ) + "%";
 
 
   /* Door animation */
@@ -1344,11 +2561,15 @@ function updateUI(){
     displayState === "CLOSING"
   ){
 
-    gate.classList.add("moving");
+    gate.classList.add(
+      "moving"
+    );
 
   }else{
 
-    gate.classList.remove("moving");
+    gate.classList.remove(
+      "moving"
+    );
 
   }
 
@@ -1357,7 +2578,9 @@ function updateUI(){
 
   if(online){
 
-    onlineBadge.classList.add("online");
+    onlineBadge.classList.add(
+      "online"
+    );
 
     onlineText.textContent =
       "ONLINE";
@@ -1367,7 +2590,9 @@ function updateUI(){
 
   }else{
 
-    onlineBadge.classList.remove("online");
+    onlineBadge.classList.remove(
+      "online"
+    );
 
     onlineText.textContent =
       "OFFLINE";
@@ -1382,45 +2607,73 @@ function updateUI(){
 
   if(displayState === "CLOSED"){
 
-    controlIcon.textContent = "↑";
-    controlText.textContent = "OPEN";
+    controlIcon.textContent =
+      "↑";
+
+    controlText.textContent =
+      "OPEN";
+
     controlSub.textContent =
       "Press to open the door";
 
+
   }else if(displayState === "OPENING"){
 
-    controlIcon.textContent = "■";
-    controlText.textContent = "STOP";
+    controlIcon.textContent =
+      "■";
+
+    controlText.textContent =
+      "STOP";
+
     controlSub.textContent =
       "Press to stop opening";
 
+
   }else if(displayState === "OPEN"){
 
-    controlIcon.textContent = "↓";
-    controlText.textContent = "CLOSE";
+    controlIcon.textContent =
+      "↓";
+
+    controlText.textContent =
+      "CLOSE";
+
     controlSub.textContent =
       "Press to close the door";
 
+
   }else if(displayState === "CLOSING"){
 
-    controlIcon.textContent = "■";
-    controlText.textContent = "STOP";
+    controlIcon.textContent =
+      "■";
+
+    controlText.textContent =
+      "STOP";
+
     controlSub.textContent =
       "Press to stop closing";
+
 
   }else if(displayState === "STOPPED"){
 
     if(nextDirection === "OPEN"){
 
-      controlIcon.textContent = "↑";
-      controlText.textContent = "OPEN";
+      controlIcon.textContent =
+        "↑";
+
+      controlText.textContent =
+        "OPEN";
+
       controlSub.textContent =
         "Press to continue opening";
 
     }else{
 
-      controlIcon.textContent = "↓";
-      controlText.textContent = "CLOSE";
+      controlIcon.textContent =
+        "↓";
+
+      controlText.textContent =
+        "CLOSE";
+
       controlSub.textContent =
         "Press to continue closing";
 
@@ -1439,6 +2692,7 @@ function startPolling(){
 
   stopPolling();
 
+
   pollTimer =
     setInterval(
       syncFromBlynk,
@@ -1452,7 +2706,9 @@ function stopPolling(){
 
   if(pollTimer){
 
-    clearInterval(pollTimer);
+    clearInterval(
+      pollTimer
+    );
 
     pollTimer = null;
 
