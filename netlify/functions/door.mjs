@@ -17,7 +17,7 @@ Blynk Cloud
 Hardware:
 ESP32
 
-Environment variables required:
+Environment variables:
 
 BLYNK_AUTH_TOKEN
 BLYNK_SERVER
@@ -75,10 +75,15 @@ function json(data, status = 200, extraHeaders = {}) {
    ========================================================= */
 
 function safeEqual(a, b) {
-    const aBuf = Buffer.from(String(a || ""));
-    const bBuf = Buffer.from(String(b || ""));
+    const aBuf =
+        Buffer.from(String(a || ""));
 
-    if (aBuf.length !== bBuf.length) {
+    const bBuf =
+        Buffer.from(String(b || ""));
+
+    if (
+        aBuf.length !== bBuf.length
+    ) {
         return false;
     }
 
@@ -93,6 +98,7 @@ function safeEqual(a, b) {
    ========================================================= */
 
 function createSession() {
+
     const expires =
         Date.now() + SESSION_TIME;
 
@@ -108,7 +114,11 @@ function createSession() {
             .update(payload)
             .digest("hex");
 
-    return payload + "." + signature;
+    return (
+        payload +
+        "." +
+        signature
+    );
 }
 
 /* =========================================================
@@ -116,14 +126,17 @@ function createSession() {
    ========================================================= */
 
 function verifySession(request) {
+
     const cookie =
         request.headers.get("cookie") || "";
 
-    const match = cookie.match(
-        new RegExp(
-            COOKIE_NAME + "=([^;]+)"
-        )
-    );
+    const match =
+        cookie.match(
+            new RegExp(
+                COOKIE_NAME +
+                "=([^;]+)"
+            )
+        );
 
     if (!match) {
         return false;
@@ -135,7 +148,9 @@ function verifySession(request) {
     const parts =
         token.split(".");
 
-    if (parts.length !== 2) {
+    if (
+        parts.length !== 2
+    ) {
         return false;
     }
 
@@ -169,6 +184,7 @@ function verifySession(request) {
    ========================================================= */
 
 function blynkBase() {
+
     let server =
         process.env.BLYNK_SERVER ||
         "https://blynk.cloud";
@@ -187,6 +203,7 @@ function blynkBase() {
    ========================================================= */
 
 async function blynkGet(path) {
+
     const token =
         process.env.BLYNK_AUTH_TOKEN;
 
@@ -221,6 +238,7 @@ async function blynkGet(path) {
         await response.text();
 
     if (!response.ok) {
+
         throw new Error(
             "Blynk HTTP " +
             response.status +
@@ -233,28 +251,13 @@ async function blynkGet(path) {
 }
 
 /* =========================================================
-   GET BLYNK STATUS
+   GET BLYNK DATAS
+   
+   IMPORTANT:
+   Only ONE getAll request for normal status.
    ========================================================= */
 
-async function getBlynkStatus() {
-
-    /*
-       Check actual ESP32 hardware connection.
-    */
-
-    const onlineText =
-        await blynkGet(
-            "/external/api/isHardwareConnected"
-        );
-
-    const deviceOnline =
-        onlineText
-            .trim()
-            .toLowerCase() === "true";
-
-    /*
-       Get V0, V1, V2, V3, V4.
-    */
+async function getBlynkData() {
 
     const allText =
         await blynkGet(
@@ -264,22 +267,27 @@ async function getBlynkStatus() {
     let values;
 
     try {
+
         values =
             JSON.parse(allText);
+
     } catch {
+
         throw new Error(
             "Invalid response from Blynk getAll."
         );
     }
 
     return {
-        deviceOnline,
 
         command:
             values.v0 ?? 0,
 
         state:
-            values.v1 ?? "CLOSED",
+            String(
+                values.v1 ??
+                "CLOSED"
+            ).toUpperCase(),
 
         position:
             Number(
@@ -288,7 +296,8 @@ async function getBlynkStatus() {
 
         nextDirection:
             String(
-                values.v3 ?? "OPEN"
+                values.v3 ??
+                "OPEN"
             ).toUpperCase(),
 
         onlineDatastream:
@@ -297,22 +306,39 @@ async function getBlynkStatus() {
 }
 
 /* =========================================================
+   CHECK ESP32 HARDWARE
+   ========================================================= */
+
+async function isHardwareConnected() {
+
+    const onlineText =
+        await blynkGet(
+            "/external/api/isHardwareConnected"
+        );
+
+    return (
+        onlineText
+            .trim()
+            .toLowerCase() ===
+        "true"
+    );
+}
+
+/* =========================================================
    SEND DOOR PRESS
    ========================================================= */
 
 async function sendDoorPress() {
+
     const token =
         process.env.BLYNK_AUTH_TOKEN;
 
     if (!token) {
+
         throw new Error(
             "BLYNK_AUTH_TOKEN is not configured."
         );
     }
-
-    /*
-       Send V0 = 1 to Blynk.
-    */
 
     const url =
         blynkBase() +
@@ -334,6 +360,7 @@ async function sendDoorPress() {
         await response.text();
 
     if (!response.ok) {
+
         throw new Error(
             "Blynk command failed: " +
             response.status +
@@ -352,17 +379,19 @@ async function sendDoorPress() {
 export default async function(request) {
 
     /* =====================================================
-       OPTIONS / CORS PREFLIGHT
+       CORS PREFLIGHT
        ===================================================== */
 
     if (
         request.method === "OPTIONS"
     ) {
+
         return new Response(
             null,
             {
                 status: 204,
-                headers: corsHeaders()
+                headers:
+                    corsHeaders()
             }
         );
     }
@@ -370,26 +399,14 @@ export default async function(request) {
     try {
 
         const url =
-            new URL(request.url);
-
-        /*
-           IMPORTANT
-
-           Support both:
-
-           /api/door?action=press
-
-           AND
-
-           POST body:
-           { "action": "press" }
-
-           This fixes the "Unknown action."
-           problem without changing the frontend.
-        */
+            new URL(
+                request.url
+            );
 
         const queryAction =
-            url.searchParams.get("action");
+            url.searchParams.get(
+                "action"
+            );
 
         /* =================================================
            LOGIN
@@ -400,8 +417,10 @@ export default async function(request) {
         ) {
 
             if (
-                request.method !== "POST"
+                request.method !==
+                "POST"
             ) {
+
                 return json(
                     {
                         error:
@@ -414,9 +433,12 @@ export default async function(request) {
             let body;
 
             try {
+
                 body =
                     await request.json();
+
             } catch {
+
                 return json(
                     {
                         error:
@@ -433,6 +455,7 @@ export default async function(request) {
                 !process.env.APP_PASSWORD ||
                 !process.env.SESSION_SECRET
             ) {
+
                 return json(
                     {
                         error:
@@ -448,6 +471,7 @@ export default async function(request) {
                     process.env.APP_PASSWORD
                 )
             ) {
+
                 return json(
                     {
                         error:
@@ -472,7 +496,8 @@ export default async function(request) {
                         session +
                         "; Max-Age=" +
                         Math.floor(
-                            SESSION_TIME / 1000
+                            SESSION_TIME /
+                            1000
                         ) +
                         "; Path=/; HttpOnly; Secure; SameSite=None"
                 }
@@ -488,8 +513,10 @@ export default async function(request) {
         ) {
 
             if (
-                request.method !== "POST"
+                request.method !==
+                "POST"
             ) {
+
                 return json(
                     {
                         error:
@@ -513,7 +540,7 @@ export default async function(request) {
         }
 
         /* =================================================
-           SESSION CHECK
+           SESSION
            ================================================= */
 
         if (
@@ -521,8 +548,10 @@ export default async function(request) {
         ) {
 
             if (
-                request.method !== "GET"
+                request.method !==
+                "GET"
             ) {
+
                 return json(
                     {
                         error:
@@ -532,23 +561,24 @@ export default async function(request) {
                 );
             }
 
-            const authenticated =
-                verifySession(request);
-
             return json(
                 {
-                    authenticated
+                    authenticated:
+                        verifySession(
+                            request
+                        )
                 }
             );
         }
 
         /* =================================================
-           AUTH CHECK
+           AUTHENTICATION
            ================================================= */
 
         if (
             !verifySession(request)
         ) {
+
             return json(
                 {
                     error:
@@ -559,7 +589,13 @@ export default async function(request) {
         }
 
         /* =================================================
-           GET STATUS
+           STATUS
+           
+           One Blynk request only:
+           getAll
+           
+           We use V4 as the displayed online
+           datastream when available.
            ================================================= */
 
         if (
@@ -570,16 +606,43 @@ export default async function(request) {
             )
         ) {
 
-            const status =
-                await getBlynkStatus();
+            const data =
+                await getBlynkData();
 
             return json(
-                status
+                {
+                    deviceOnline:
+                        Number(
+                            data.onlineDatastream
+                        ) === 1,
+
+                    command:
+                        data.command,
+
+                    state:
+                        data.state,
+
+                    position:
+                        data.position,
+
+                    nextDirection:
+                        data.nextDirection,
+
+                    onlineDatastream:
+                        data.onlineDatastream
+                }
             );
         }
 
         /* =================================================
-           POST COMMAND
+           PRESS COMMAND
+           
+           IMPORTANT:
+
+           Only check hardware once,
+           then send ONE V0 command.
+
+           No "after" getAll request.
            ================================================= */
 
         if (
@@ -589,30 +652,14 @@ export default async function(request) {
             let body = {};
 
             try {
+
                 body =
                     await request.json();
+
             } catch {
+
                 body = {};
             }
-
-            /*
-               IMPORTANT FIX
-
-               Frontend sends:
-
-               POST /api/door?action=press
-
-               So first check query parameter.
-
-               Also support:
-
-               {
-                   "action": "press"
-               }
-
-               in case another frontend sends it
-               inside JSON.
-            */
 
             const action =
                 queryAction ||
@@ -621,6 +668,7 @@ export default async function(request) {
             if (
                 action !== "press"
             ) {
+
                 return json(
                     {
                         error:
@@ -631,15 +679,16 @@ export default async function(request) {
             }
 
             /* =============================================
-               CHECK ESP32 BEFORE SENDING COMMAND
+               CHECK ESP32
                ============================================= */
 
-            const before =
-                await getBlynkStatus();
+            const deviceOnline =
+                await isHardwareConnected();
 
             if (
-                !before.deviceOnline
+                !deviceOnline
             ) {
+
                 return json(
                     {
                         error:
@@ -658,71 +707,37 @@ export default async function(request) {
 
             await sendDoorPress();
 
-            /* =============================================
-               GIVE BLYNK + ESP32 TIME
-               TO PROCESS COMMAND
-               ============================================= */
+            /*
+               Do NOT call getBlynkStatus()
+               here.
 
-            await new Promise(
-                resolve =>
-                    setTimeout(
-                        resolve,
-                        180
-                    )
-            );
+               The frontend will receive:
+               ok:true
 
-            /* =============================================
-               READ NEW STATUS
-               ============================================= */
-
-            const after =
-                await getBlynkStatus();
+               and the next normal polling
+               request will get the updated state.
+            */
 
             return json(
                 {
                     ok: true,
 
                     deviceOnline:
-                        after.deviceOnline,
-
-                    state:
-                        after.state,
-
-                    position:
-                        after.position,
-
-                    nextDirection:
-                        after.nextDirection
+                        true
                 }
             );
         }
 
         /* =================================================
-           UNKNOWN GET ACTION
-           ================================================= */
-
-        if (
-            request.method === "GET"
-        ) {
-            return json(
-                {
-                    error:
-                        "Unknown action."
-                },
-                400
-            );
-        }
-
-        /* =================================================
-           METHOD NOT ALLOWED
+           UNKNOWN ACTION
            ================================================= */
 
         return json(
             {
                 error:
-                    "Method not allowed."
+                    "Unknown action."
             },
-            405
+            400
         );
 
     } catch (error) {
