@@ -1876,6 +1876,8 @@ input{
       </button>
 
 
+      <p id="serviceError" role="alert" hidden></p>
+
       <div class="infoGrid">
 
 
@@ -1976,6 +1978,8 @@ let nextDirection = "OPEN";
 let online = false;
 let busy = false;
 let pollTimer = null;
+let statusPending = false;
+let quotaMessage = "";
 
 
 /* ================================
@@ -2092,7 +2096,17 @@ async function apiRequest(
       data.error ||
       "Request failed";
 
-    throw new Error(message);
+    const error = new Error(message);
+    error.code = data.code;
+
+    if(error.code === "BLYNK_MESSAGE_LIMIT"){
+      quotaMessage = message;
+      online = false;
+      stopPolling();
+      updateUI();
+    }
+
+    throw error;
 
   }
 
@@ -2292,6 +2306,10 @@ logoutButton.addEventListener(
 
 async function syncFromBlynk(){
 
+  if(statusPending || quotaMessage || document.hidden || app.style.display !== "block") return;
+
+  statusPending = true;
+
   try{
 
     const data =
@@ -2341,7 +2359,7 @@ async function syncFromBlynk(){
       }
 
 
-      online = true;
+      online = data.deviceOnline === true;
 
 
       updateUI();
@@ -2355,6 +2373,10 @@ async function syncFromBlynk(){
 
     updateUI();
 
+  }finally{
+
+    statusPending = false;
+
   }
 
 }
@@ -2366,7 +2388,7 @@ async function syncFromBlynk(){
 
 async function sendDoorCommand(){
 
-  if(busy) return;
+  if(busy || quotaMessage) return;
 
 
   if(!online){
@@ -2454,7 +2476,10 @@ async function sendDoorCommand(){
 
 
     setTimeout(
-      syncFromBlynk,
+      async function(){
+        await syncFromBlynk();
+        startPolling();
+      },
       350
     );
 
@@ -2474,8 +2499,7 @@ async function sendDoorCommand(){
 
         busy = false;
 
-        controlButton.disabled =
-          false;
+        updateUI();
 
       },
       700
@@ -2501,6 +2525,11 @@ controlButton.addEventListener(
 ================================ */
 
 function updateUI(){
+
+  const serviceError = document.getElementById("serviceError");
+  serviceError.textContent = quotaMessage;
+  serviceError.hidden = !quotaMessage;
+  controlButton.disabled = busy || Boolean(quotaMessage);
 
   let displayState =
     state || "CLOSED";
@@ -2681,6 +2710,13 @@ function updateUI(){
 
   }
 
+
+  if(quotaMessage){
+    onlineText.textContent = "QUOTA REACHED";
+    infoConnection.textContent = "QUOTA REACHED";
+    controlSub.textContent = "Remote control unavailable";
+  }
+
 }
 
 
@@ -2692,12 +2728,15 @@ function startPolling(){
 
   stopPolling();
 
+  if(quotaMessage || document.hidden || app.style.display !== "block") return;
 
-  pollTimer =
-    setInterval(
-      syncFromBlynk,
-      1000
-    );
+  const moving = state === "OPENING" || state === "CLOSING";
+  const delay = !online ? 60000 : moving ? 1000 : 30000;
+
+  pollTimer = setTimeout(async function(){
+    await syncFromBlynk();
+    startPolling();
+  }, delay);
 
 }
 
@@ -2706,7 +2745,7 @@ function stopPolling(){
 
   if(pollTimer){
 
-    clearInterval(
+    clearTimeout(
       pollTimer
     );
 
@@ -2715,6 +2754,14 @@ function stopPolling(){
   }
 
 }
+
+document.addEventListener("visibilitychange", async function(){
+  stopPolling();
+  if(!document.hidden && app.style.display === "block"){
+    await syncFromBlynk();
+    startPolling();
+  }
+});
 
 
 /* ================================

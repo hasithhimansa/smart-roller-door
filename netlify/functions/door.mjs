@@ -202,6 +202,25 @@ function blynkBase() {
    BLYNK GET
    ========================================================= */
 
+function blynkError(status, text) {
+    const quotaExceeded =
+        (status === 403 || status === 429) &&
+        /messages\s+limit\s+reached/i.test(text);
+
+    const error = new Error(
+        quotaExceeded
+            ? "Blynk's message quota has been reached. Remote control is unavailable. Check message usage in Blynk Console and wait for the quota to reset or upgrade your plan, then reload this page."
+            : "Blynk request failed (HTTP " + status + ")."
+    );
+
+    error.code = quotaExceeded
+        ? "BLYNK_MESSAGE_LIMIT"
+        : "BLYNK_REQUEST_FAILED";
+    error.status = quotaExceeded ? 503 : 502;
+
+    return error;
+}
+
 async function blynkGet(path) {
 
     const token =
@@ -239,12 +258,7 @@ async function blynkGet(path) {
 
     if (!response.ok) {
 
-        throw new Error(
-            "Blynk HTTP " +
-            response.status +
-            ": " +
-            text
-        );
+        throw blynkError(response.status, text);
     }
 
     return text;
@@ -329,45 +343,7 @@ async function isHardwareConnected() {
    ========================================================= */
 
 async function sendDoorPress() {
-
-    const token =
-        process.env.BLYNK_AUTH_TOKEN;
-
-    if (!token) {
-
-        throw new Error(
-            "BLYNK_AUTH_TOKEN is not configured."
-        );
-    }
-
-    const url =
-        blynkBase() +
-        "/external/api/update" +
-        "?token=" +
-        encodeURIComponent(token) +
-        "&V0=1";
-
-    const response =
-        await fetch(
-            url,
-            {
-                method: "GET",
-                redirect: "follow"
-            }
-        );
-
-    const text =
-        await response.text();
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Blynk command failed: " +
-            response.status +
-            " " +
-            text
-        );
-    }
+    await blynkGet("/external/api/update?V0=1");
 
     return true;
 }
@@ -744,16 +720,19 @@ export default async function(request) {
 
         console.error(
             "ROLLER DOOR ERROR:",
-            error
+            error?.code || "INTERNAL_ERROR"
         );
 
         return json(
             {
                 error:
-                    error?.message ||
-                    "Internal server error."
+                    error?.code ? error.message :
+                    "Internal server error.",
+
+                code:
+                    error?.code || "INTERNAL_ERROR"
             },
-            500
+            error?.status || 500
         );
     }
 }
