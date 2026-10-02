@@ -1,767 +1,136 @@
-import crypto from "node:crypto";
+let command = "NONE";
 
-/*
-=========================================================
-SMART ROLLER DOOR BACKEND
-=========================================================
+let status = {
+  state: "CLOSED",
+  position: 0,
+  nextDirection: "OPEN",
+  online: false,
+  lastCommand: "NONE",
+  updatedAt: Date.now()
+};
 
-Frontend:
-GitHub Pages
+const DEVICE_KEY = process.env.DEVICE_KEY;
+const APP_PASSWORD = process.env.APP_PASSWORD;
 
-Backend:
-Netlify Function
-
-Cloud:
-Blynk Cloud
-
-Hardware:
-ESP32
-
-Environment variables:
-
-BLYNK_AUTH_TOKEN
-BLYNK_SERVER
-APP_PASSWORD
-SESSION_SECRET
-ALLOWED_ORIGIN
-=========================================================
-*/
-
-const COOKIE_NAME = "roller_session";
-const SESSION_TIME = 12 * 60 * 60 * 1000;
-
-/* =========================================================
-   CORS
-   ========================================================= */
-
-function corsHeaders() {
-    return {
-        "Access-Control-Allow-Origin":
-            process.env.ALLOWED_ORIGIN || "*",
-
-        "Access-Control-Allow-Credentials":
-            "true",
-
-        "Access-Control-Allow-Headers":
-            "Content-Type",
-
-        "Access-Control-Allow-Methods":
-            "GET,POST,OPTIONS",
-
-        "Content-Type":
-            "application/json"
-    };
+function json(data, statusCode = 200) {
+  return new Response(JSON.stringify(data), {
+    status: statusCode,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    }
+  });
 }
 
-/* =========================================================
-   JSON RESPONSE
-   ========================================================= */
-
-function json(data, status = 200, extraHeaders = {}) {
-    return new Response(
-        JSON.stringify(data),
-        {
-            status,
-            headers: {
-                ...corsHeaders(),
-                ...extraHeaders
-            }
-        }
-    );
+function authorized(request) {
+  const key = request.headers.get("x-device-key");
+  return key && DEVICE_KEY && key === DEVICE_KEY;
 }
 
-/* =========================================================
-   CONSTANT-TIME STRING CHECK
-   ========================================================= */
+export default async function handler(request) {
+  const url = new URL(request.url);
 
-function safeEqual(a, b) {
-    const aBuf =
-        Buffer.from(String(a || ""));
-
-    const bBuf =
-        Buffer.from(String(b || ""));
-
-    if (
-        aBuf.length !== bBuf.length
-    ) {
-        return false;
+  // -----------------------------
+  // DEVICE: GET COMMAND
+  // -----------------------------
+  if (request.method === "GET" && url.searchParams.get("device") === "1") {
+    if (!authorized(request)) {
+      return json({ error: "Unauthorized" }, 401);
     }
 
-    return crypto.timingSafeEqual(
-        aBuf,
-        bBuf
-    );
-}
+    status.online = true;
 
-/* =========================================================
-   CREATE SESSION
-   ========================================================= */
+    return json({
+      command,
+      status
+    });
+  }
 
-function createSession() {
-
-    const expires =
-        Date.now() + SESSION_TIME;
-
-    const payload =
-        String(expires);
-
-    const signature =
-        crypto
-            .createHmac(
-                "sha256",
-                process.env.SESSION_SECRET
-            )
-            .update(payload)
-            .digest("hex");
-
-    return (
-        payload +
-        "." +
-        signature
-    );
-}
-
-/* =========================================================
-   VERIFY SESSION
-   ========================================================= */
-
-function verifySession(request) {
-
-    const cookie =
-        request.headers.get("cookie") || "";
-
-    const match =
-        cookie.match(
-            new RegExp(
-                COOKIE_NAME +
-                "=([^;]+)"
-            )
-        );
-
-    if (!match) {
-        return false;
+  // -----------------------------
+  // DEVICE: UPDATE STATUS
+  // -----------------------------
+  if (request.method === "POST" && url.searchParams.get("device") === "1") {
+    if (!authorized(request)) {
+      return json({ error: "Unauthorized" }, 401);
     }
-
-    const token =
-        match[1];
-
-    const parts =
-        token.split(".");
-
-    if (
-        parts.length !== 2
-    ) {
-        return false;
-    }
-
-    const expires =
-        Number(parts[0]);
-
-    if (
-        !expires ||
-        Date.now() > expires
-    ) {
-        return false;
-    }
-
-    const expected =
-        crypto
-            .createHmac(
-                "sha256",
-                process.env.SESSION_SECRET
-            )
-            .update(parts[0])
-            .digest("hex");
-
-    return safeEqual(
-        parts[1],
-        expected
-    );
-}
-
-/* =========================================================
-   BLYNK BASE URL
-   ========================================================= */
-
-function blynkBase() {
-
-    let server =
-        process.env.BLYNK_SERVER ||
-        "https://blynk.cloud";
-
-    server =
-        server.replace(
-            /\/+$/,
-            ""
-        );
-
-    return server;
-}
-
-/* =========================================================
-   BLYNK GET
-   ========================================================= */
-
-async function blynkGet(path) {
-
-    const token =
-        process.env.BLYNK_AUTH_TOKEN;
-
-    if (!token) {
-        throw new Error(
-            "BLYNK_AUTH_TOKEN is not configured."
-        );
-    }
-
-    const separator =
-        path.includes("?")
-            ? "&"
-            : "?";
-
-    const url =
-        blynkBase() +
-        path +
-        separator +
-        "token=" +
-        encodeURIComponent(token);
-
-    const response =
-        await fetch(
-            url,
-            {
-                method: "GET",
-                redirect: "follow"
-            }
-        );
-
-    const text =
-        await response.text();
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Blynk HTTP " +
-            response.status +
-            ": " +
-            text
-        );
-    }
-
-    return text;
-}
-
-/* =========================================================
-   GET BLYNK DATAS
-   
-   IMPORTANT:
-   Only ONE getAll request for normal status.
-   ========================================================= */
-
-async function getBlynkData() {
-
-    const allText =
-        await blynkGet(
-            "/external/api/getAll"
-        );
-
-    let values;
 
     try {
+      const body = await request.json();
 
-        values =
-            JSON.parse(allText);
+      status = {
+        state: body.state ?? status.state,
+        position: Number(body.position ?? status.position),
+        nextDirection: body.nextDirection ?? status.nextDirection,
+        online: true,
+        lastCommand: body.lastCommand ?? status.lastCommand,
+        updatedAt: Date.now()
+      };
+
+      command = "NONE";
+
+      return json({
+        ok: true,
+        status
+      });
+    } catch {
+      return json({ error: "Invalid JSON" }, 400);
+    }
+  }
+
+  // -----------------------------
+  // WEBSITE: LOGIN
+  // -----------------------------
+  if (request.method === "POST") {
+    try {
+      const body = await request.json();
+
+      if (body.action === "login") {
+        if (
+          APP_PASSWORD &&
+          body.password === APP_PASSWORD
+        ) {
+          return json({
+            ok: true,
+            loggedIn: true
+          });
+        }
+
+        return json({
+          ok: false,
+          error: "Wrong password"
+        }, 401);
+      }
+
+      // -----------------------------
+      // WEBSITE: PRESS BUTTON
+      // -----------------------------
+      if (body.action === "press") {
+        command = "PRESS";
+
+        return json({
+          ok: true,
+          command
+        });
+      }
 
     } catch {
-
-        throw new Error(
-            "Invalid response from Blynk getAll."
-        );
+      return json({ error: "Invalid JSON" }, 400);
     }
+  }
 
-    return {
+  // -----------------------------
+  // WEBSITE: GET STATUS
+  // -----------------------------
+  if (request.method === "GET") {
+    const age = Date.now() - status.updatedAt;
 
-        command:
-            values.v0 ?? 0,
+    return json({
+      ...status,
+      online: age < 10000
+    });
+  }
 
-        state:
-            String(
-                values.v1 ??
-                "CLOSED"
-            ).toUpperCase(),
-
-        position:
-            Number(
-                values.v2 ?? 0
-            ),
-
-        nextDirection:
-            String(
-                values.v3 ??
-                "OPEN"
-            ).toUpperCase(),
-
-        onlineDatastream:
-            values.v4 ?? 0
-    };
+  return json({
+    error: "Method not allowed"
+  }, 405);
 }
-
-/* =========================================================
-   CHECK ESP32 HARDWARE
-   ========================================================= */
-
-async function isHardwareConnected() {
-
-    const onlineText =
-        await blynkGet(
-            "/external/api/isHardwareConnected"
-        );
-
-    return (
-        onlineText
-            .trim()
-            .toLowerCase() ===
-        "true"
-    );
-}
-
-/* =========================================================
-   SEND DOOR PRESS
-   ========================================================= */
-
-async function sendDoorPress() {
-
-    const token =
-        process.env.BLYNK_AUTH_TOKEN;
-
-    if (!token) {
-
-        throw new Error(
-            "BLYNK_AUTH_TOKEN is not configured."
-        );
-    }
-
-    const url =
-        blynkBase() +
-        "/external/api/update" +
-        "?token=" +
-        encodeURIComponent(token) +
-        "&V0=1";
-
-    const response =
-        await fetch(
-            url,
-            {
-                method: "GET",
-                redirect: "follow"
-            }
-        );
-
-    const text =
-        await response.text();
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Blynk command failed: " +
-            response.status +
-            " " +
-            text
-        );
-    }
-
-    return true;
-}
-
-/* =========================================================
-   MAIN NETLIFY FUNCTION
-   ========================================================= */
-
-export default async function(request) {
-
-    /* =====================================================
-       CORS PREFLIGHT
-       ===================================================== */
-
-    if (
-        request.method === "OPTIONS"
-    ) {
-
-        return new Response(
-            null,
-            {
-                status: 204,
-                headers:
-                    corsHeaders()
-            }
-        );
-    }
-
-    try {
-
-        const url =
-            new URL(
-                request.url
-            );
-
-        const queryAction =
-            url.searchParams.get(
-                "action"
-            );
-
-        /* =================================================
-           LOGIN
-           ================================================= */
-
-        if (
-            queryAction === "login"
-        ) {
-
-            if (
-                request.method !==
-                "POST"
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "Method not allowed"
-                    },
-                    405
-                );
-            }
-
-            let body;
-
-            try {
-
-                body =
-                    await request.json();
-
-            } catch {
-
-                return json(
-                    {
-                        error:
-                            "Invalid JSON."
-                    },
-                    400
-                );
-            }
-
-            const password =
-                body.password;
-
-            if (
-                !process.env.APP_PASSWORD ||
-                !process.env.SESSION_SECRET
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "Server authentication is not configured."
-                    },
-                    500
-                );
-            }
-
-            if (
-                !safeEqual(
-                    password,
-                    process.env.APP_PASSWORD
-                )
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "Incorrect password."
-                    },
-                    401
-                );
-            }
-
-            const session =
-                createSession();
-
-            return json(
-                {
-                    ok: true
-                },
-                200,
-                {
-                    "Set-Cookie":
-                        COOKIE_NAME +
-                        "=" +
-                        session +
-                        "; Max-Age=" +
-                        Math.floor(
-                            SESSION_TIME /
-                            1000
-                        ) +
-                        "; Path=/; HttpOnly; Secure; SameSite=None"
-                }
-            );
-        }
-
-        /* =================================================
-           LOGOUT
-           ================================================= */
-
-        if (
-            queryAction === "logout"
-        ) {
-
-            if (
-                request.method !==
-                "POST"
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "Method not allowed"
-                    },
-                    405
-                );
-            }
-
-            return json(
-                {
-                    ok: true
-                },
-                200,
-                {
-                    "Set-Cookie":
-                        COOKIE_NAME +
-                        "=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None"
-                }
-            );
-        }
-
-        /* =================================================
-           SESSION
-           ================================================= */
-
-        if (
-            queryAction === "session"
-        ) {
-
-            if (
-                request.method !==
-                "GET"
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "Method not allowed"
-                    },
-                    405
-                );
-            }
-
-            return json(
-                {
-                    authenticated:
-                        verifySession(
-                            request
-                        )
-                }
-            );
-        }
-
-        /* =================================================
-           AUTHENTICATION
-           ================================================= */
-
-        if (
-            !verifySession(request)
-        ) {
-
-            return json(
-                {
-                    error:
-                        "Authentication required."
-                },
-                401
-            );
-        }
-
-        /* =================================================
-           STATUS
-           
-           One Blynk request only:
-           getAll
-           
-           We use V4 as the displayed online
-           datastream when available.
-           ================================================= */
-
-        if (
-            request.method === "GET" &&
-            (
-                !queryAction ||
-                queryAction === "status"
-            )
-        ) {
-
-            const data =
-                await getBlynkData();
-
-            return json(
-                {
-                    deviceOnline:
-                        Number(
-                            data.onlineDatastream
-                        ) === 1,
-
-                    command:
-                        data.command,
-
-                    state:
-                        data.state,
-
-                    position:
-                        data.position,
-
-                    nextDirection:
-                        data.nextDirection,
-
-                    onlineDatastream:
-                        data.onlineDatastream
-                }
-            );
-        }
-
-        /* =================================================
-           PRESS COMMAND
-           
-           IMPORTANT:
-
-           Only check hardware once,
-           then send ONE V0 command.
-
-           No "after" getAll request.
-           ================================================= */
-
-        if (
-            request.method === "POST"
-        ) {
-
-            let body = {};
-
-            try {
-
-                body =
-                    await request.json();
-
-            } catch {
-
-                body = {};
-            }
-
-            const action =
-                queryAction ||
-                body.action;
-
-            if (
-                action !== "press"
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "Unknown action."
-                    },
-                    400
-                );
-            }
-
-            /* =============================================
-               CHECK ESP32
-               ============================================= */
-
-            const deviceOnline =
-                await isHardwareConnected();
-
-            if (
-                !deviceOnline
-            ) {
-
-                return json(
-                    {
-                        error:
-                            "ESP32 is offline.",
-
-                        deviceOnline:
-                            false
-                    },
-                    409
-                );
-            }
-
-            /* =============================================
-               SEND V0 = 1
-               ============================================= */
-
-            await sendDoorPress();
-
-            /*
-               Do NOT call getBlynkStatus()
-               here.
-
-               The frontend will receive:
-               ok:true
-
-               and the next normal polling
-               request will get the updated state.
-            */
-
-            return json(
-                {
-                    ok: true,
-
-                    deviceOnline:
-                        true
-                }
-            );
-        }
-
-        /* =================================================
-           UNKNOWN ACTION
-           ================================================= */
-
-        return json(
-            {
-                error:
-                    "Unknown action."
-            },
-            400
-        );
-
-    } catch (error) {
-
-        console.error(
-            "ROLLER DOOR ERROR:",
-            error
-        );
-
-        return json(
-            {
-                error:
-                    error?.message ||
-                    "Internal server error."
-            },
-            500
-        );
-    }
-}
-
-/* =========================================================
-   NETLIFY ROUTING
-   ========================================================= */
-
-export const config = {
-    path: "/api/door"
-};
