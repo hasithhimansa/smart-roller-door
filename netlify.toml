@@ -1,8 +1,11 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
 
 [functions]
-  directory = "netlify/functions"
-
-[functions."door"]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/door"
+  to = "/.netlify/functions/door"
+  status = 200
